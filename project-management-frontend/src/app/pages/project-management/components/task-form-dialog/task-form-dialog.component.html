@@ -11,7 +11,7 @@
             {{ project.project }}
           </mat-option>
         </mat-select>
-        <mat-error>{{ getErrorMessage('project') }}</mat-error>
+        <mat-error>{{ taskForm.get('project')!.errors  | errorMessage }}</mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
@@ -25,7 +25,7 @@
       <mat-form-field appearance="outline">
         <mat-label>工作項名稱 *</mat-label>
         <input matInput formControlName="task" placeholder="請輸入工作項名稱">
-        <mat-error>{{ getErrorMessage('task') }}</mat-error>
+        <mat-error>{{ taskForm.get('task')!.errors  | errorMessage }}</mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
@@ -35,7 +35,7 @@
             {{ member.name }}
           </mat-option>
         </mat-select>
-        <mat-error>{{ getErrorMessage('member') }}</mat-error>
+        <mat-error>{{ taskForm.get('member')!.errors  | errorMessage }}</mat-error>
       </mat-form-field>
     </div>
 
@@ -48,6 +48,7 @@
             {{ option.label }}
           </mat-option>
         </mat-select>
+        <mat-error>{{ taskForm.get('complexity')!.errors  | errorMessage }}</mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
@@ -57,6 +58,7 @@
             {{ option.label }}
           </mat-option>
         </mat-select>
+        <mat-error>{{ taskForm.get('priority')!.errors  | errorMessage }}</mat-error>
       </mat-form-field>
     </div>
 
@@ -67,7 +69,7 @@
         <input matInput [matDatepicker]="startPicker" formControlName="startDate">
         <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
         <mat-datepicker #startPicker></mat-datepicker>
-        <mat-error>{{ getErrorMessage('startDate') }}</mat-error>
+        <mat-error>{{ taskForm.get('startDate')!.errors  | errorMessage }}</mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
@@ -75,7 +77,7 @@
         <input matInput [matDatepicker]="endPicker" formControlName="endDate">
         <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
         <mat-datepicker #endPicker></mat-datepicker>
-        <mat-error>{{ getErrorMessage('endDate') }}</mat-error>
+        <mat-error>{{ taskForm.get('endDate')!.errors  | errorMessage }}</mat-error>
       </mat-form-field>
     </div>
 
@@ -86,6 +88,7 @@
         <input matInput [matDatepicker]="actualPicker" formControlName="actualEndDate">
         <mat-datepicker-toggle matIconSuffix [for]="actualPicker"></mat-datepicker-toggle>
         <mat-datepicker #actualPicker></mat-datepicker>
+        <mat-error>{{ taskForm.get('actualEndDate')!.errors  | errorMessage }}</mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
@@ -95,6 +98,7 @@
             {{ option.label }}
           </mat-option>
         </mat-select>
+        <mat-error>{{ taskForm.get('status')!.errors  | errorMessage }}</mat-error>
       </mat-form-field>
     </div>
 
@@ -105,8 +109,7 @@
 <mat-dialog-actions align="end" class="p-4">
   <button mat-button (click)="onCancel()">取消</button>
   <button mat-raised-button color="primary" 
-          (click)="onSubmit()" 
-          [disabled]="taskForm.invalid">
+          (click)="onSubmit()" >
     {{ data.isEdit ? '更新' : '新增' }}
   </button>
 </mat-dialog-actions>

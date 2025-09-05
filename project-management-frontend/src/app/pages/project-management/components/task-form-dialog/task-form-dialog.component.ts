@@ -15,6 +15,7 @@ import { Observable } from 'rxjs';
 import { Task, TaskStatus, Priority, Complexity, Project } from '../../../../shared/models/project.model';
 import { Member } from '../../../../shared/models/member.model';
 import { ProjectCrudService } from '../../../../core/services/project-crud.service';
+import { ErrorMessagePipe } from 'src/app/core/pipes/error-message.pipe';
 
 export interface TaskFormDialogData {
   task?: Task;
@@ -37,6 +38,7 @@ export interface TaskFormDialogData {
     MatNativeDateModule,
     MatButtonModule,
     MatIconModule,
+    ErrorMessagePipe
   ],
   providers: [
     provideNativeDateAdapter(),
@@ -95,8 +97,8 @@ export class TaskFormDialogComponent implements OnInit {
       complexity: ['中', Validators.required],
       priority: ['中', Validators.required],
       status: ['not-started', Validators.required],
-      startDate: ['', Validators.required],
-      endDate: ['', Validators.required],
+      startDate: ['', ],
+      endDate: ['', ],
       actualEndDate: ['']
     }, { validators: this.dateValidator });
   }
@@ -146,6 +148,8 @@ export class TaskFormDialogComponent implements OnInit {
   }
 
   onSubmit(): void {
+    this.taskForm.markAllAsTouched()
+    this.taskForm.updateValueAndValidity()
     if (this.taskForm.valid) {
       const formValue = this.taskForm.value;
       const taskData: Omit<Task, 'id'> = {
