@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, map, tap, of, delay } from 'rxjs';
+import { BehaviorSubject, Observable, map, of, delay } from 'rxjs';
 import { Project, Task, ProjectData } from '../../shared/models/project.model';
 import { Member } from '../../shared/models/member.model';
 
@@ -20,28 +20,23 @@ export class ProjectCrudService {
   }
 
   private loadData(): void {
-    // 先嘗試從 localStorage 載入資料
-    const savedData = localStorage.getItem('projectData');
-    if (savedData) {
-      try {
-        const data = JSON.parse(savedData);
-        this.dataSubject.next(data);
-        return;
-      } catch (error) {
-        console.error('Error parsing saved data:', error);
-      }
-    }
-    
-    // 如果沒有儲存的資料，則從 JSON 檔案載入
-    this.http.get<ProjectData>('/assets/data/project-data.json')
-      .subscribe(data => {
-        this.dataSubject.next(data);
-        this.saveData(data);
+    // 直接從 JSON 檔案載入
+    console.log('Loading project data from assets/data/project-data.json');
+    this.http.get<ProjectData>('assets/data/project-data.json')
+      .subscribe({
+        next: (data) => {
+          console.log('Loaded project data from JSON file:', data);
+          this.dataSubject.next(data);
+        },
+        error: (error) => {
+          console.error('Error loading project data from JSON file:', error);
+          this.dataSubject.next(null);
+        }
       });
   }
 
   private loadMembers(): void {
-    this.http.get<Member[]>('/assets/data/members.json')
+    this.http.get<Member[]>('assets/data/members.json')
       .subscribe(members => this.membersSubject.next(members));
   }
 
@@ -59,7 +54,6 @@ export class ProjectCrudService {
         
         data.projectTableData.push(newProject);
         this.dataSubject.next(data);
-        this.saveData(data);
         
         return newProject;
       })
@@ -76,7 +70,6 @@ export class ProjectCrudService {
         
         data.projectTableData[index] = { ...data.projectTableData[index], ...updates };
         this.dataSubject.next(data);
-        this.saveData(data);
         
         return data.projectTableData[index];
       })
@@ -98,7 +91,6 @@ export class ProjectCrudService {
         
         data.projectTableData.splice(index, 1);
         this.dataSubject.next(data);
-        this.saveData(data);
         
         return true;
       })
@@ -119,7 +111,6 @@ export class ProjectCrudService {
         
         data.memberTableData.push(newTask);
         this.dataSubject.next(data);
-        this.saveData(data);
         
         return newTask;
       })
@@ -136,7 +127,6 @@ export class ProjectCrudService {
         
         data.memberTableData[index] = { ...data.memberTableData[index], ...updates };
         this.dataSubject.next(data);
-        this.saveData(data);
         
         return data.memberTableData[index];
       })
@@ -159,7 +149,6 @@ export class ProjectCrudService {
       
       // 更新資料
       this.dataSubject.next(currentData);
-      this.saveData(currentData);
       
       return of(true).pipe(delay(300)); // 模擬 API 延遲
     }
@@ -191,20 +180,10 @@ export class ProjectCrudService {
     );
   }
 
-  // 儲存資料到本地
-  private saveData(data: ProjectData): void {
-    try {
-      localStorage.setItem('projectData', JSON.stringify(data));
-      console.log('Data saved to localStorage:', data);
-    } catch (error) {
-      console.error('Error saving data to localStorage:', error);
-    }
-  }
-
   // 重新載入資料
   refreshData(): void {
-    // 不需要重新載入，資料已經在 BehaviorSubject 中保持同步
-    // 如果需要強制重新載入，可以調用 this.loadData();
+    this.loadData();
+    this.loadMembers();
   }
 
   // 匯出資料到檔案 (供開發者手動更新 assets)

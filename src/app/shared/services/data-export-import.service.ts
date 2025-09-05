@@ -91,21 +91,9 @@ export class DataExportImportService {
   // 應用匯入的資料
   async applyImportedData(data: ExportData): Promise<void> {
     try {
-      // 清除現有資料並匯入新資料
-      if (data.members) {
-        localStorage.setItem('membersData', JSON.stringify(data.members));
-      }
-
-      if (data.systems) {
-        localStorage.setItem('project_management_systems', JSON.stringify(data.systems));
-      }
-
-      if (data.projectData) {
-        localStorage.setItem('projectData', JSON.stringify(data.projectData));
-      }
-
-      // 重新載入頁面以應用新資料
-      window.location.reload();
+      // 注意：由於現在直接從 JSON 檔案讀取，匯入功能需要手動更新 assets 檔案
+      // 這裡只能提供匯出功能，讓開發者手動替換檔案
+      throw new Error('匯入功能需要手動更新 assets 檔案。請使用匯出功能下載各別檔案，然後手動替換 src/assets/data/ 中的對應檔案。');
     } catch (error) {
       throw new Error('資料匯入失敗：' + error);
     }

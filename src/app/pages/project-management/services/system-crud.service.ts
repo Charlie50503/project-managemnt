@@ -20,8 +20,6 @@ export class SystemCrudService {
   private systemsSubject = new BehaviorSubject<System[]>([]);
   public systems$ = this.systemsSubject.asObservable();
   private readonly ASSETS_PATH = 'assets/data/systems.json';
-  private readonly STORAGE_KEY = 'project_management_systems';
-
   constructor(private http: HttpClient) {
     this.loadInitialData();
   }
@@ -48,7 +46,6 @@ export class SystemCrudService {
     const currentSystems = this.systemsSubject.value;
     const updatedSystems = [...currentSystems, newSystem];
     this.systemsSubject.next(updatedSystems);
-    this.saveToLocalStorage(updatedSystems);
 
     return of(newSystem).pipe(delay(500)); // 模擬 API 延遲
   }
@@ -73,7 +70,6 @@ export class SystemCrudService {
     updatedSystems[systemIndex] = updatedSystem;
 
     this.systemsSubject.next(updatedSystems);
-    this.saveToLocalStorage(updatedSystems);
 
     return of(updatedSystem).pipe(delay(500)); // 模擬 API 延遲
   }
@@ -84,15 +80,13 @@ export class SystemCrudService {
     const updatedSystems = currentSystems.filter(system => system.id !== id);
 
     this.systemsSubject.next(updatedSystems);
-    this.saveToLocalStorage(updatedSystems);
 
     return of(true).pipe(delay(500)); // 模擬 API 延遲
   }
 
   // 刷新資料
   refreshData(): void {
-    const savedSystems = this.loadFromLocalStorage();
-    this.systemsSubject.next(savedSystems);
+    this.loadInitialData();
   }
 
   // 生成唯一 ID
@@ -102,14 +96,8 @@ export class SystemCrudService {
 
   // 載入初始資料
   private loadInitialData(): void {
-    // 先嘗試從 localStorage 載入
-    const savedSystems = this.loadFromLocalStorage();
-    if (savedSystems.length > 0) {
-      this.systemsSubject.next(savedSystems);
-      return;
-    }
-
-    // 如果 localStorage 沒有資料，從 assets 載入
+    // 直接從 assets 載入
+    console.log('Loading systems from assets/data/systems.json');
     this.http.get<System[]>(this.ASSETS_PATH).pipe(
       catchError(() => {
         // 如果 assets 檔案載入失敗，使用空陣列
@@ -117,10 +105,8 @@ export class SystemCrudService {
         return of([]);
       })
     ).subscribe(systems => {
+      console.log('Loaded systems from JSON file:', systems);
       this.systemsSubject.next(systems);
-      if (systems.length > 0) {
-        this.saveToLocalStorage(systems);
-      }
     });
   }
 
@@ -140,23 +126,5 @@ export class SystemCrudService {
     URL.revokeObjectURL(url);
   }
 
-  // 儲存到 localStorage
-  private saveToLocalStorage(systems: System[]): void {
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(systems));
-    } catch (error) {
-      console.error('Error saving systems to localStorage:', error);
-    }
-  }
 
-  // 從 localStorage 載入
-  private loadFromLocalStorage(): System[] {
-    try {
-      const saved = localStorage.getItem(this.STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
-    } catch (error) {
-      console.error('Error loading systems from localStorage:', error);
-      return [];
-    }
-  }
 }
