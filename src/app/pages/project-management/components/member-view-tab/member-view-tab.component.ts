@@ -37,7 +37,7 @@ export class MemberViewTabComponent {
 
   filteredData$!: Observable<GroupedMemberData[]>;
 
-  displayedColumns: string[] = ['member', 'project', 'taskStats', 'status', 'results'];
+  displayedColumns: string[] = ['member', 'totalTasks', 'completed', 'inProgress', 'notStarted', 'dateRange'];
   displayedColumnsWithExpand: string[] = [...this.displayedColumns, 'expand'];
   expandedElement: GroupedMemberData | null = null;
 
@@ -91,6 +91,20 @@ export class MemberViewTabComponent {
 
   getTaskStatusCount(tasks: any[], status: string): number {
     return tasks.filter(t => t.status === status).length;
+  }
+
+  getDateRange(tasks: any[]): string {
+    if (!tasks || tasks.length === 0) return '-';
+    
+    const startDates = tasks.map(t => new Date(t.startDate)).filter(d => !isNaN(d.getTime()));
+    const endDates = tasks.map(t => new Date(t.endDate)).filter(d => !isNaN(d.getTime()));
+    
+    if (startDates.length === 0 || endDates.length === 0) return '-';
+    
+    const minStart = new Date(Math.min(...startDates.map(d => d.getTime())));
+    const maxEnd = new Date(Math.max(...endDates.map(d => d.getTime())));
+    
+    return `${minStart.toLocaleDateString('zh-TW')} ~ ${maxEnd.toLocaleDateString('zh-TW')}`;
   }
 
   onEditTask(task: any): void {

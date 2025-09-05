@@ -15,51 +15,28 @@
         </td>
       </ng-container>
 
-      <!-- 專案/系統欄 -->
+      <!-- 系統名稱欄 -->
+      <ng-container matColumnDef="system">
+        <th mat-header-cell *matHeaderCellDef>系統名稱</th>
+        <td mat-cell *matCellDef="let project">
+          <div class="font-medium text-gray-900">{{ project.system }}</div>
+        </td>
+      </ng-container>
+
+      <!-- 案件名稱欄 -->
       <ng-container matColumnDef="project">
-        <th mat-header-cell *matHeaderCellDef>專案/系統</th>
+        <th mat-header-cell *matHeaderCellDef>案件名稱</th>
         <td mat-cell *matCellDef="let project">
           <div class="font-medium text-gray-900">{{ project.project }}</div>
-          <div class="text-sm text-gray-500">{{ project.system }}</div>
           <div class="text-xs text-gray-400 mt-1">
             {{ project.startDate }} ~ {{ project.expectedEndDate }}
           </div>
         </td>
       </ng-container>
 
-      <!-- 任務統計欄 -->
-      <ng-container matColumnDef="taskStats">
-        <th mat-header-cell *matHeaderCellDef>任務統計</th>
-        <td mat-cell *matCellDef="let project" class="text-sm">
-          <div>總任務: {{ project.totalTasks }} 項</div>
-          <div class="text-green-600">完成: {{ project.completedTasks }}</div>
-          <div class="text-blue-600">進行: {{ project.inProgressTasks }}</div>
-          <div class="text-gray-600">未開始: {{ project.notStartedTasks }}</div>
-          <div class="text-xs text-gray-500 mt-1">
-            成員: {{ project.membersList.length }} 人
-          </div>
-        </td>
-      </ng-container>
-
-      <!-- 整體進度欄 -->
-      <ng-container matColumnDef="progress">
-        <th mat-header-cell *matHeaderCellDef>整體進度</th>
-        <td mat-cell *matCellDef="let project">
-          <div class="flex items-center">
-            <mat-progress-bar 
-              mode="determinate" 
-              [value]="project.overallProgress"
-              [color]="project.overallProgress === 100 ? 'primary' : 'primary'"
-              class="w-16 mr-2">
-            </mat-progress-bar>
-            <span class="text-sm text-gray-600">{{ project.overallProgress }}%</span>
-          </div>
-        </td>
-      </ng-container>
-
-      <!-- 狀態欄 -->
-      <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef>狀態</th>
+      <!-- 案件進度欄 -->
+      <ng-container matColumnDef="projectProgress">
+        <th mat-header-cell *matHeaderCellDef>案件進度</th>
         <td mat-cell *matCellDef="let project">
           <mat-chip 
             [ngClass]="statusHelper.getStatusColor(project.status)"
@@ -69,25 +46,50 @@
         </td>
       </ng-container>
 
+      <!-- 總任務項欄 -->
+      <ng-container matColumnDef="totalTasks">
+        <th mat-header-cell *matHeaderCellDef>總任務項</th>
+        <td mat-cell *matCellDef="let project" class="text-center">
+          <span class="font-medium">{{ project.totalTasks }}</span>
+        </td>
+      </ng-container>
 
+      <!-- 已完成欄 -->
+      <ng-container matColumnDef="completed">
+        <th mat-header-cell *matHeaderCellDef>已完成</th>
+        <td mat-cell *matCellDef="let project" class="text-center">
+          <span class="text-green-600 font-medium">{{ project.completedTasks }}</span>
+        </td>
+      </ng-container>
 
-      <!-- 操作欄 -->
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>操作</th>
+      <!-- 進行中欄 -->
+      <ng-container matColumnDef="inProgress">
+        <th mat-header-cell *matHeaderCellDef>進行中</th>
+        <td mat-cell *matCellDef="let project" class="text-center">
+          <span class="text-blue-600 font-medium">{{ project.inProgressTasks }}</span>
+        </td>
+      </ng-container>
+
+      <!-- 未開始欄 -->
+      <ng-container matColumnDef="notStarted">
+        <th mat-header-cell *matHeaderCellDef>未開始</th>
+        <td mat-cell *matCellDef="let project" class="text-center">
+          <span class="text-gray-600 font-medium">{{ project.notStartedTasks }}</span>
+        </td>
+      </ng-container>
+
+      <!-- 進度百分比欄 -->
+      <ng-container matColumnDef="progressPercent">
+        <th mat-header-cell *matHeaderCellDef>進度百分比</th>
         <td mat-cell *matCellDef="let project">
-          <div class="flex gap-1">
-            <button mat-icon-button 
-                    (click)="onEditProject(project)" 
-                    class="text-blue-600 hover:bg-blue-50"
-                    matTooltip="編輯案件">
-              <mat-icon class="text-sm">edit</mat-icon>
-            </button>
-            <button mat-icon-button 
-                    (click)="onAddTask(project.project)" 
-                    class="text-green-600 hover:bg-green-50"
-                    matTooltip="新增工作項">
-              <mat-icon class="text-sm">add_task</mat-icon>
-            </button>
+          <div class="flex items-center">
+            <mat-progress-bar 
+              mode="determinate" 
+              [value]="project.overallProgress"
+              [color]="project.overallProgress === 100 ? 'primary' : 'primary'"
+              class="w-16 mr-2">
+            </mat-progress-bar>
+            <span class="text-sm text-gray-600">{{ project.overallProgress }}%</span>
           </div>
         </td>
       </ng-container>
@@ -108,44 +110,37 @@
                     
                     <div class="space-y-2">
                       <div *ngFor="let task of member.tasks" 
-                           class="grid grid-cols-1 md:grid-cols-4 gap-2 items-center p-2 bg-gray-50 rounded">
+                           class="grid grid-cols-1 md:grid-cols-6 gap-2 items-center p-2 bg-gray-50 rounded">
+                        <!-- 姓名 -->
+                        <div class="font-medium text-sm">{{ member.member }}</div>
+                        
+                        <!-- 項目名稱 -->
                         <div class="font-medium text-sm">{{ task.task }}</div>
                         
-                        <div class="flex gap-1">
-                          <mat-chip 
-                            [ngClass]="statusHelper.getComplexityColor(task.complexity)"
-                            class="text-xs">
-                            {{ task.complexity }}
-                          </mat-chip>
-                          <mat-chip 
-                            [ngClass]="statusHelper.getPriorityColor(task.priority)"
-                            class="text-xs">
-                            {{ task.priority }}
-                          </mat-chip>
-                        </div>
-                        
-                        <div class="text-xs text-gray-600">
-                          {{ task.startDate }} ~ {{ task.endDate }}
-                        </div>
-                        
+                        <!-- 項目狀態 -->
                         <mat-chip 
                           [ngClass]="statusHelper.getStatusColor(task.status)"
                           class="text-xs">
                           {{ statusHelper.getStatusText(task.status) }}
                         </mat-chip>
                         
-                        <div class="flex items-center gap-2">
-                          <div class="text-xs text-gray-600">
-                            <div *ngIf="task.actualEndDate" class="text-green-600">
-                              完成: {{ task.actualEndDate }}
-                            </div>
-                          </div>
-                          <button mat-icon-button 
-                                  (click)="onEditTask(task)" 
-                                  class="text-blue-600 hover:bg-blue-50"
-                                  matTooltip="編輯工作項">
-                            <mat-icon class="text-xs">edit</mat-icon>
-                          </button>
+                        <!-- 複雜度 -->
+                        <mat-chip 
+                          [ngClass]="statusHelper.getComplexityColor(task.complexity)"
+                          class="text-xs">
+                          {{ task.complexity }}
+                        </mat-chip>
+                        
+                        <!-- 優先度 -->
+                        <mat-chip 
+                          [ngClass]="statusHelper.getPriorityColor(task.priority)"
+                          class="text-xs">
+                          {{ task.priority }}
+                        </mat-chip>
+                        
+                        <!-- 開始日~預計完成日 -->
+                        <div class="text-xs text-gray-600">
+                          {{ task.startDate }} ~ {{ task.endDate }}
                         </div>
                       </div>
                     </div>

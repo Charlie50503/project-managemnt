@@ -38,7 +38,7 @@ export class ProjectViewTabComponent {
   @Output() editTask = new EventEmitter<any>();
 
   filteredData$!: Observable<GroupedProjectData[]>;
-  displayedColumns: string[] = ['project', 'taskStats', 'progress', 'status', 'actions'];
+  displayedColumns: string[] = ['system', 'project', 'projectProgress', 'totalTasks', 'completed', 'inProgress', 'notStarted', 'progressPercent'];
   displayedColumnsWithExpand: string[] = [...this.displayedColumns, 'expand'];
   expandedElement: GroupedProjectData | null = null;
 
