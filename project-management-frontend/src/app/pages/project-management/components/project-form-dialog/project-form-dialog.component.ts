@@ -15,6 +15,7 @@ import { Project, ProjectStatus } from '../../../../shared/models/project.model'
 import { Member } from '../../../../shared/models/member.model';
 import { ProjectCrudService } from '../../../../core/services/project-crud.service';
 import { SystemCrudService, System } from '../../services/system-crud.service';
+import { ErrorMessagePipe } from 'src/app/core/pipes/error-message.pipe';
 
 export interface ProjectFormDialogData {
   project?: Project;
@@ -36,7 +37,8 @@ export interface ProjectFormDialogData {
     MatNativeDateModule,
     MatButtonModule,
     MatIconModule,
-    MatChipsModule
+    MatChipsModule,
+    ErrorMessagePipe
   ],
   providers: [
     provideNativeDateAdapter(),
@@ -113,6 +115,8 @@ export class ProjectFormDialogComponent implements OnInit {
 
 
   onSubmit(): void {
+    this.projectForm.markAllAsTouched();
+    this.projectForm.updateValueAndValidity();
     if (this.projectForm.valid) {
       const formValue = this.projectForm.value;
       const projectData: Omit<Project, 'id'> = {
