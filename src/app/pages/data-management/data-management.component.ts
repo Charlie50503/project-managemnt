@@ -20,6 +20,7 @@ import { SystemFormDialogComponent } from '../project-management/components/syst
 import { ProjectFormDialogComponent } from '../project-management/components/project-form-dialog/project-form-dialog.component';
 import { MemberFormDialogComponent } from '../project-management/components/member-form-dialog/member-form-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
+import { DataExportImportDialogComponent } from '../../shared/components/data-export-import-dialog/data-export-import-dialog.component';
 
 @Component({
   selector: 'app-data-management',
@@ -281,6 +282,14 @@ export class DataManagementComponent implements OnInit {
       'self-built': '自建'
     };
     return sourceMap[source] || source;
+  }
+
+  // 匯出/匯入功能
+  openExportImportDialog(): void {
+    this.dialog.open(DataExportImportDialogComponent, {
+      width: '600px',
+      disableClose: false
+    });
   }
 
   private refreshData(): void {
