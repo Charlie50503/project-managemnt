@@ -56,12 +56,13 @@ export class DataManagementComponent implements OnInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar
   ) {
-    this.members$ = this.memberCrudService.getMembers();
-    this.systems$ = this.systemCrudService.getSystems();
-    this.projects$ = this.projectCrudService.getProjects();
+    // 直接訂閱服務的 Observable，這樣會自動更新
+    this.members$ = this.memberCrudService.members$;
+    this.systems$ = this.systemCrudService.systems$;
+    this.projects$ = this.projectCrudService.projects$;
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   // 人員管理方法
   openCreateMemberDialog(): void {

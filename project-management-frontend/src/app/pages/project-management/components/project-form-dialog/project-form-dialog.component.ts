@@ -62,7 +62,7 @@ export class ProjectFormDialogComponent implements OnInit {
     private systemCrudService: SystemCrudService
   ) {
     this.members$ = this.projectCrudService.members$;
-    this.systems$ = this.systemCrudService.getSystems();
+    this.systems$ = this.systemCrudService.systems$;
     this.projectForm = this.createForm();
   }
 

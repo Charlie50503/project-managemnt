@@ -14,6 +14,9 @@ export class ProjectCrudService {
   
   public data$ = this.dataSubject.asObservable();
   public members$ = this.membersSubject.asObservable();
+  public projects$ = this.data$.pipe(
+    map(data => data?.projectTableData || [])
+  );
 
   constructor(private http: HttpClient) {
     this.loadData();

@@ -74,7 +74,7 @@ export class TaskFormDialogComponent implements OnInit {
     private projectCrudService: ProjectCrudService
   ) {
     this.members$ = this.projectCrudService.members$;
-    this.projects$ = this.projectCrudService.getProjects();
+    this.projects$ = this.projectCrudService.projects$;
     this.taskForm = this.createForm();
   }
 
