@@ -170,7 +170,7 @@ export class DataExportImportDialogComponent {
     private dialogRef: MatDialogRef<DataExportImportDialogComponent>,
     private dataService: DataExportImportService,
     private snackBar: MatSnackBar
-  ) {}
+  ) { }
 
   // 匯出所有資料
   exportAllData(): void {

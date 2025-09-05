@@ -11,6 +11,9 @@ import { MatListModule } from '@angular/material/list';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { TokenService } from 'src/app/core/services/token.service';
 import { UserService } from 'src/app/core/services/user.service';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { DataExportImportDialogComponent } from '../../shared/components/data-export-import-dialog/data-export-import-dialog.component';
 
 interface pageInterface {
   pageName: string;
@@ -33,6 +36,8 @@ interface pageInterface {
         MatButtonModule,
         MatExpansionModule,
         MatListModule,
+        MatDialogModule,
+        MatTooltipModule,
     ]
 })
 export class HomeComponent implements AfterViewInit {
@@ -85,12 +90,20 @@ export class HomeComponent implements AfterViewInit {
     private tokenService: TokenService,
     public router: Router,
     private observer: BreakpointObserver,
+    private dialog: MatDialog,
   ) {}
 
   public onLogout() {
     this.tokenService.removeAllAccessToken();
     this.router.navigate(['login'], {
       queryParams: { isDisabledAutoLogin: 'true' },
+    });
+  }
+
+  public openExportImportDialog(): void {
+    this.dialog.open(DataExportImportDialogComponent, {
+      width: '600px',
+      disableClose: false
     });
   }
 
