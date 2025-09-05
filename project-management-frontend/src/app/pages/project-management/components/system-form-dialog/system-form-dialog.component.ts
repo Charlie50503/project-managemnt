@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { ErrorMessagePipe } from 'src/app/core/pipes/error-message.pipe';
 
 export interface SystemFormDialogData {
   system?: any;
@@ -22,7 +23,8 @@ export interface SystemFormDialogData {
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    ErrorMessagePipe
   ],
   template: `
     <h2 mat-dialog-title class="flex items-center gap-2">
@@ -36,14 +38,14 @@ export interface SystemFormDialogData {
         <mat-form-field appearance="outline" class="w-full">
           <mat-label>系統名稱 *</mat-label>
           <input matInput formControlName="name" placeholder="請輸入系統名稱">
-          <mat-error>{{ getErrorMessage('name') }}</mat-error>
+          <mat-error>{{ systemForm.get('name')!.errors | errorMessage }}</mat-error>
         </mat-form-field>
 
         <!-- 系統代碼 -->
         <mat-form-field appearance="outline" class="w-full">
           <mat-label>系統代碼 *</mat-label>
           <input matInput formControlName="code" placeholder="請輸入系統代碼">
-          <mat-error>{{ getErrorMessage('code') }}</mat-error>
+          <mat-error>{{ systemForm.get('code')!.errors | errorMessage }}</mat-error>
         </mat-form-field>
 
         <!-- 系統描述 -->
@@ -133,6 +135,8 @@ export class SystemFormDialogComponent implements OnInit {
   }
 
   onSubmit(): void {
+    this.systemForm.markAllAsTouched();
+    this.systemForm.updateValueAndValidity();
     if (this.systemForm.valid) {
       const formValue = this.systemForm.value;
       const systemData = {
