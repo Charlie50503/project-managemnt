@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { GroupedMemberData } from '../../../../shared/models/project.model';
 import { StatusHelperService } from '../../../../shared/services/status-helper.service';
 
@@ -22,7 +23,8 @@ import { StatusHelperService } from '../../../../shared/services/status-helper.s
     MatButtonModule,
     MatIconModule,
     MatProgressBarModule,
-    MatChipsModule
+    MatChipsModule,
+    MatTooltipModule
   ],
 
 })
@@ -34,6 +36,7 @@ export class MemberViewTabComponent {
   @Input() expandedRows!: Set<string>;
   @Output() toggleRow = new EventEmitter<string>();
   @Output() editTask = new EventEmitter<any>();
+  @Output() addTask = new EventEmitter<void>();
 
   filteredData$!: Observable<GroupedMemberData[]>;
 
@@ -109,5 +112,9 @@ export class MemberViewTabComponent {
 
   onEditTask(task: any): void {
     this.editTask.emit(task);
+  }
+
+  onAddTask(): void {
+    this.addTask.emit();
   }
 }

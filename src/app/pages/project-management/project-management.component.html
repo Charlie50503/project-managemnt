@@ -87,7 +87,8 @@
             [hideCompleted]="hideCompleted"
             [expandedRows]="expandedRows"
             (toggleRow)="toggleRow($event)"
-            (editTask)="openEditTaskDialog($event)">
+            (editTask)="openEditTaskDialog($event)"
+            (addTask)="openCreateTaskDialog()">
           </app-member-view-tab>
         </div>
       </mat-tab>

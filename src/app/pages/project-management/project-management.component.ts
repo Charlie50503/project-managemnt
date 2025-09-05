@@ -65,7 +65,7 @@ export class ProjectManagementComponent implements OnInit {
 
   selectedTabIndex = 0;
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   getCurrentDate(): string {
     return new Date().toLocaleDateString('zh-TW');
@@ -107,14 +107,14 @@ export class ProjectManagementComponent implements OnInit {
   filterMemberData(data: GroupedMemberData[]): GroupedMemberData[] {
     return data.filter(group => {
       const matchesSearch = group.member.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           group.project.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           group.system.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           group.tasks.some(task => task.task.toLowerCase().includes(this.searchTerm.toLowerCase()));
-      
-      const matchesStatus = this.statusFilter === 'all' || 
-                           group.overallStatus === this.statusFilter ||
-                           group.tasks.some(task => task.status === this.statusFilter);
-      
+        group.project.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        group.system.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        group.tasks.some(task => task.task.toLowerCase().includes(this.searchTerm.toLowerCase()));
+
+      const matchesStatus = this.statusFilter === 'all' ||
+        group.overallStatus === this.statusFilter ||
+        group.tasks.some(task => task.status === this.statusFilter);
+
       return matchesSearch && matchesStatus;
     });
   }
@@ -122,18 +122,18 @@ export class ProjectManagementComponent implements OnInit {
   filterProjectData(data: GroupedProjectData[]): GroupedProjectData[] {
     return data.filter(project => {
       const matchesSearch = project.project.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           project.system.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           project.membersList.some(member => 
-                             member.member.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                             member.tasks.some(task => task.task.toLowerCase().includes(this.searchTerm.toLowerCase()))
-                           );
-      
-      const matchesStatus = this.statusFilter === 'all' || 
-                           project.status === this.statusFilter ||
-                           project.membersList.some(member => 
-                             member.tasks.some(task => task.status === this.statusFilter)
-                           );
-      
+        project.system.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        project.membersList.some(member =>
+          member.member.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+          member.tasks.some(task => task.task.toLowerCase().includes(this.searchTerm.toLowerCase()))
+        );
+
+      const matchesStatus = this.statusFilter === 'all' ||
+        project.status === this.statusFilter ||
+        project.membersList.some(member =>
+          member.tasks.some(task => task.status === this.statusFilter)
+        );
+
       return matchesSearch && matchesStatus;
     });
   }

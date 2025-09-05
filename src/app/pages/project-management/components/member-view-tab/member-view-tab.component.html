@@ -1,4 +1,16 @@
 <mat-card class="overflow-hidden">
+  <!-- 新增項目按鈕 -->
+  <div class="p-4 border-b border-gray-200">
+    <button 
+      mat-raised-button 
+      color="primary"
+      (click)="onAddTask()"
+      class="flex items-center gap-2">
+      <mat-icon>add</mat-icon>
+      新增項目
+    </button>
+  </div>
+  
   <div class="overflow-x-auto">
     <table mat-table [dataSource]="(filteredData$ | async) || []" multiTemplateDataRows class="w-full">
 
@@ -100,6 +112,16 @@
                       <!-- 開始日~預計完成日 -->
                       <div class="text-xs text-gray-600">
                         {{ task.startDate }} ~ {{ task.endDate }}
+                      </div>
+                      
+                      <!-- 編輯按鈕 -->
+                      <div class="flex justify-end">
+                        <button mat-icon-button 
+                                (click)="onEditTask(task); $event.stopPropagation()" 
+                                class="text-blue-600 hover:bg-blue-50"
+                                matTooltip="編輯項目">
+                          <mat-icon class="text-sm">edit</mat-icon>
+                        </button>
                       </div>
                     </div>
                   </div>

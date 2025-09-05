@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { GroupedProjectData } from '../../../../shared/models/project.model';
 import { StatusHelperService } from '../../../../shared/services/status-helper.service';
 
@@ -22,7 +23,8 @@ import { StatusHelperService } from '../../../../shared/services/status-helper.s
     MatButtonModule,
     MatIconModule,
     MatProgressBarModule,
-    MatChipsModule
+    MatChipsModule,
+    MatTooltipModule
   ],
 
 })
@@ -38,7 +40,7 @@ export class ProjectViewTabComponent {
   @Output() editTask = new EventEmitter<any>();
 
   filteredData$!: Observable<GroupedProjectData[]>;
-  displayedColumns: string[] = ['system', 'project', 'projectProgress', 'totalTasks', 'completed', 'inProgress', 'notStarted', 'progressPercent'];
+  displayedColumns: string[] = ['system', 'project', 'projectProgress', 'totalTasks', 'completed', 'inProgress', 'notStarted', 'progressPercent', 'actions'];
   displayedColumnsWithExpand: string[] = [...this.displayedColumns, 'expand'];
   expandedElement: GroupedProjectData | null = null;
 
