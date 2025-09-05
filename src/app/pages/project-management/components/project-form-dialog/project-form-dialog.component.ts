@@ -74,6 +74,8 @@ export class ProjectFormDialogComponent implements OnInit {
 
   private createForm(): FormGroup {
     return this.fb.group({
+      projectNumber: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9]+$/)]],
+      projectSource: ['', Validators.required],
       project: ['', [Validators.required, Validators.minLength(2)]],
       system: ['', [Validators.required, Validators.minLength(2)]],
       projectManager: ['', Validators.required],
@@ -96,11 +98,14 @@ export class ProjectFormDialogComponent implements OnInit {
 
   private populateForm(project: Project): void {
     this.projectForm.patchValue({
+      projectNumber: project.projectNumber || '',
+      projectSource: project.projectSource || '',
       project: project.project,
       system: project.system,
       projectManager: project.projectManager,
       startDate: new Date(project.startDate),
       expectedEndDate: new Date(project.expectedEndDate),
+      demo: project.demo || '',
       status: project.status
     });
   }
@@ -111,11 +116,14 @@ export class ProjectFormDialogComponent implements OnInit {
     if (this.projectForm.valid) {
       const formValue = this.projectForm.value;
       const projectData: Omit<Project, 'id'> = {
+        projectNumber: formValue.projectNumber,
+        projectSource: formValue.projectSource,
         project: formValue.project,
         system: formValue.system,
         projectManager: formValue.projectManager,
         startDate: this.formatDate(formValue.startDate),
         expectedEndDate: this.formatDate(formValue.expectedEndDate),
+        demo: formValue.demo || '',
         status: formValue.status,
         totalTasks: this.data.project?.totalTasks || 0,
         completedTasks: this.data.project?.completedTasks || 0,
@@ -145,6 +153,9 @@ export class ProjectFormDialogComponent implements OnInit {
     if (field?.hasError('minlength')) {
       return `${this.getFieldLabel(fieldName)}至少需要2個字元`;
     }
+    if (field?.hasError('pattern') && fieldName === 'projectNumber') {
+      return '案件編號只能包含英文字母和數字';
+    }
     if (this.projectForm.hasError('dateInvalid')) {
       return '結束日期不能早於或等於開始日期';
     }
@@ -153,6 +164,8 @@ export class ProjectFormDialogComponent implements OnInit {
 
   private getFieldLabel(fieldName: string): string {
     const labels: { [key: string]: string } = {
+      projectNumber: '案件編號',
+      projectSource: '案件來源',
       project: '案件名稱',
       system: '系統名稱',
       projectManager: '專案經理',

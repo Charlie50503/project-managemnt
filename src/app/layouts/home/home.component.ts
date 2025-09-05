@@ -50,6 +50,13 @@ export class HomeComponent implements AfterViewInit {
       children: [],
     },
     {
+      pageName: '資料管理',
+      isShow: true,
+      route: '/home/data-management',
+      type: 'link',
+      children: [],
+    },
+    {
       pageName: '一般系統',
       isShow: true,
       route: '/main/SystemManagement/List',

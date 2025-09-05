@@ -1,0 +1,202 @@
+<div class="min-h-screen bg-gray-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- 標題 -->
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">資料管理</h1>
+      <p class="text-gray-600">管理系統資料與案件資料</p>
+    </div>
+
+    <!-- 分頁標籤 -->
+    <mat-tab-group class="bg-white rounded-lg shadow">
+      <!-- 系統管理分頁 -->
+      <mat-tab label="系統管理">
+        <div class="p-6">
+          <!-- 操作按鈕 -->
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-800">系統列表</h2>
+            <button 
+              mat-raised-button 
+              color="primary"
+              (click)="openCreateSystemDialog()"
+              class="flex items-center gap-2">
+              <mat-icon>add</mat-icon>
+              新增系統
+            </button>
+          </div>
+
+          <!-- 系統表格 -->
+          <mat-card>
+            <div class="overflow-x-auto">
+              <table mat-table [dataSource]="(systems$ | async) || []" class="w-full">
+                <!-- 系統名稱欄 -->
+                <ng-container matColumnDef="name">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">系統名稱</th>
+                  <td mat-cell *matCellDef="let system" class="font-medium">{{ system.name }}</td>
+                </ng-container>
+
+                <!-- 系統代碼欄 -->
+                <ng-container matColumnDef="code">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">系統代碼</th>
+                  <td mat-cell *matCellDef="let system">
+                    <mat-chip class="bg-blue-100 text-blue-800">{{ system.code }}</mat-chip>
+                  </td>
+                </ng-container>
+
+                <!-- 系統描述欄 -->
+                <ng-container matColumnDef="description">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">系統描述</th>
+                  <td mat-cell *matCellDef="let system" class="max-w-xs truncate">
+                    {{ system.description || '-' }}
+                  </td>
+                </ng-container>
+
+                <!-- 負責人欄 -->
+                <ng-container matColumnDef="owner">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">負責人</th>
+                  <td mat-cell *matCellDef="let system">{{ system.owner || '-' }}</td>
+                </ng-container>
+
+                <!-- 建立日期欄 -->
+                <ng-container matColumnDef="createdAt">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">建立日期</th>
+                  <td mat-cell *matCellDef="let system" class="text-sm text-gray-600">
+                    {{ formatDate(system.createdAt) }}
+                  </td>
+                </ng-container>
+
+                <!-- 操作欄 -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">操作</th>
+                  <td mat-cell *matCellDef="let system">
+                    <div class="flex gap-1">
+                      <button 
+                        mat-icon-button 
+                        (click)="openEditSystemDialog(system)"
+                        class="text-blue-600 hover:bg-blue-50"
+                        matTooltip="編輯系統">
+                        <mat-icon class="text-sm">edit</mat-icon>
+                      </button>
+                      <button 
+                        mat-icon-button 
+                        (click)="deleteSystem(system)"
+                        class="text-red-600 hover:bg-red-50"
+                        matTooltip="刪除系統">
+                        <mat-icon class="text-sm">delete</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="systemDisplayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: systemDisplayedColumns;" class="hover:bg-gray-50"></tr>
+              </table>
+            </div>
+          </mat-card>
+        </div>
+      </mat-tab>
+
+      <!-- 案件管理分頁 -->
+      <mat-tab label="案件管理">
+        <div class="p-6">
+          <!-- 操作按鈕 -->
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-800">案件列表</h2>
+            <button 
+              mat-raised-button 
+              color="primary"
+              (click)="openCreateProjectDialog()"
+              class="flex items-center gap-2">
+              <mat-icon>add</mat-icon>
+              新增案件
+            </button>
+          </div>
+
+          <!-- 案件表格 -->
+          <mat-card>
+            <div class="overflow-x-auto">
+              <table mat-table [dataSource]="(projects$ | async) || []" class="w-full">
+                <!-- 案件編號欄 -->
+                <ng-container matColumnDef="projectNumber">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">案件編號</th>
+                  <td mat-cell *matCellDef="let project">
+                    <mat-chip class="bg-purple-100 text-purple-800">{{ project.projectNumber }}</mat-chip>
+                  </td>
+                </ng-container>
+
+                <!-- 案件來源欄 -->
+                <ng-container matColumnDef="projectSource">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">案件來源</th>
+                  <td mat-cell *matCellDef="let project">
+                    <mat-chip class="bg-orange-100 text-orange-800">{{ getSourceText(project.projectSource) }}</mat-chip>
+                  </td>
+                </ng-container>
+
+                <!-- 案件名稱欄 -->
+                <ng-container matColumnDef="project">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">案件名稱</th>
+                  <td mat-cell *matCellDef="let project" class="font-medium">{{ project.project }}</td>
+                </ng-container>
+
+                <!-- 系統名稱欄 -->
+                <ng-container matColumnDef="system">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">系統名稱</th>
+                  <td mat-cell *matCellDef="let project">{{ project.system }}</td>
+                </ng-container>
+
+                <!-- 專案經理欄 -->
+                <ng-container matColumnDef="projectManager">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">專案經理</th>
+                  <td mat-cell *matCellDef="let project">{{ project.projectManager }}</td>
+                </ng-container>
+
+                <!-- 狀態欄 -->
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">狀態</th>
+                  <td mat-cell *matCellDef="let project">
+                    <mat-chip [ngClass]="getStatusColor(project.status)">
+                      {{ getStatusText(project.status) }}
+                    </mat-chip>
+                  </td>
+                </ng-container>
+
+                <!-- 開始日期欄 -->
+                <ng-container matColumnDef="startDate">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">開始日期</th>
+                  <td mat-cell *matCellDef="let project" class="text-sm text-gray-600">
+                    {{ formatDate(project.startDate) }}
+                  </td>
+                </ng-container>
+
+                <!-- 操作欄 -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef class="font-semibold">操作</th>
+                  <td mat-cell *matCellDef="let project">
+                    <div class="flex gap-1">
+                      <button 
+                        mat-icon-button 
+                        (click)="openEditProjectDialog(project)"
+                        class="text-blue-600 hover:bg-blue-50"
+                        matTooltip="編輯案件">
+                        <mat-icon class="text-sm">edit</mat-icon>
+                      </button>
+                      <button 
+                        mat-icon-button 
+                        (click)="deleteProject(project)"
+                        class="text-red-600 hover:bg-red-50"
+                        matTooltip="刪除案件">
+                        <mat-icon class="text-sm">delete</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="projectDisplayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: projectDisplayedColumns;" class="hover:bg-gray-50"></tr>
+              </table>
+            </div>
+          </mat-card>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>

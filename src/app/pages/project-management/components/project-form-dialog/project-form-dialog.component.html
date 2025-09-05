@@ -2,6 +2,26 @@
 
 <mat-dialog-content class="max-h-96 overflow-y-auto">
   <form [formGroup]="projectForm" class="space-y-4">
+    <!-- 案件編號與來源 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <mat-form-field appearance="outline">
+        <mat-label>案件編號 *</mat-label>
+        <input matInput formControlName="projectNumber" placeholder="請輸入案件編號 (英文、數字)">
+        <mat-error>{{ getErrorMessage('projectNumber') }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>案件來源 *</mat-label>
+        <mat-select formControlName="projectSource">
+          <mat-option value="project">專案</mat-option>
+          <mat-option value="requirement">需求單</mat-option>
+          <mat-option value="assignment">交辦</mat-option>
+          <mat-option value="self-built">自建</mat-option>
+        </mat-select>
+        <mat-error>{{ getErrorMessage('projectSource') }}</mat-error>
+      </mat-form-field>
+    </div>
+
     <!-- 基本資訊 -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <mat-form-field appearance="outline">

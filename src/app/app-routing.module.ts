@@ -32,6 +32,13 @@ const routes: Routes = [
             (m) => m.ProjectManagementModule,
           ),
       },
+      {
+        path: 'data-management',
+        loadComponent: () =>
+          import('./pages/data-management/data-management.component').then(
+            (c) => c.DataManagementComponent,
+          ),
+      },
     ],
   },
   { path: '**', redirectTo: 'login', pathMatch: 'full' },
@@ -40,4 +47,4 @@ const routes: Routes = [
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule],
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }

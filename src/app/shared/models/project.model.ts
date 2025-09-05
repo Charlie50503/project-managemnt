@@ -19,6 +19,8 @@ export interface Task {
 
 export interface Project {
   id: number;
+  projectNumber?: string;
+  projectSource?: string;
   project: string;
   system: string;
   totalTasks: number;
@@ -30,6 +32,7 @@ export interface Project {
   projectManager: string;
   startDate: string;
   expectedEndDate: string;
+  demo?: string;
 }
 
 export interface GroupedMemberData {
