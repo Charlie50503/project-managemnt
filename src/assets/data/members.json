@@ -2,19 +2,31 @@
   {
     "id": 1,
     "name": "王工程師",
+    "employeeId": "E001",
     "email": "wang@company.com",
-    "department": "開發部"
+    "department": "開發部",
+    "departmentCode": "DEV",
+    "section": "前端開發科",
+    "sectionCode": "FE"
   },
   {
     "id": 2,
     "name": "李工程師",
+    "employeeId": "E002",
     "email": "li@company.com",
-    "department": "開發部"
+    "department": "開發部",
+    "departmentCode": "DEV",
+    "section": "後端開發科",
+    "sectionCode": "BE"
   },
   {
     "id": 3,
     "name": "陳工程師",
+    "employeeId": "E003",
     "email": "chen@company.com",
-    "department": "開發部"
+    "department": "開發部",
+    "departmentCode": "DEV",
+    "section": "測試科",
+    "sectionCode": "QA"
   }
 ]

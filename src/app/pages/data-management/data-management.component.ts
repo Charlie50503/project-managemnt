@@ -13,9 +13,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { SystemCrudService, System } from '../project-management/services/system-crud.service';
 import { ProjectCrudService } from '../../core/services/project-crud.service';
+import { MemberCrudService } from '../project-management/services/member-crud.service';
 import { Project } from '../../shared/models/project.model';
+import { Member } from '../../shared/models/member.model';
 import { SystemFormDialogComponent } from '../project-management/components/system-form-dialog/system-form-dialog.component';
 import { ProjectFormDialogComponent } from '../project-management/components/project-form-dialog/project-form-dialog.component';
+import { MemberFormDialogComponent } from '../project-management/components/member-form-dialog/member-form-dialog.component';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-data-management',
@@ -36,23 +40,97 @@ import { ProjectFormDialogComponent } from '../project-management/components/pro
   styleUrls: ['./data-management.component.scss']
 })
 export class DataManagementComponent implements OnInit {
+  members$: Observable<Member[]>;
   systems$: Observable<System[]>;
   projects$: Observable<Project[]>;
 
+  memberDisplayedColumns: string[] = ['name', 'employeeId', 'email', 'department', 'departmentCode', 'section', 'sectionCode', 'actions'];
   systemDisplayedColumns: string[] = ['name', 'code', 'description', 'owner', 'createdAt', 'actions'];
   projectDisplayedColumns: string[] = ['projectNumber', 'projectSource', 'project', 'system', 'projectManager', 'status', 'startDate', 'actions'];
 
   constructor(
+    private memberCrudService: MemberCrudService,
     private systemCrudService: SystemCrudService,
     private projectCrudService: ProjectCrudService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar
   ) {
+    this.members$ = this.memberCrudService.getMembers();
     this.systems$ = this.systemCrudService.getSystems();
     this.projects$ = this.projectCrudService.getProjects();
   }
 
   ngOnInit(): void {}
+
+  // 人員管理方法
+  openCreateMemberDialog(): void {
+    const dialogRef = this.dialog.open(MemberFormDialogComponent, {
+      width: '600px',
+      data: { isEdit: false }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.memberCrudService.createMember(result).subscribe({
+          next: () => {
+            this.snackBar.open('人員新增成功', '關閉', { duration: 3000 });
+          },
+          error: (error) => {
+            this.snackBar.open('人員新增失敗', '關閉', { duration: 3000 });
+            console.error('Error creating member:', error);
+          }
+        });
+      }
+    });
+  }
+
+  openEditMemberDialog(member: Member): void {
+    const dialogRef = this.dialog.open(MemberFormDialogComponent, {
+      width: '600px',
+      data: { member, isEdit: true }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.memberCrudService.updateMember(member.id, result).subscribe({
+          next: () => {
+            this.snackBar.open('人員更新成功', '關閉', { duration: 3000 });
+          },
+          error: (error) => {
+            this.snackBar.open('人員更新失敗', '關閉', { duration: 3000 });
+            console.error('Error updating member:', error);
+          }
+        });
+      }
+    });
+  }
+
+  deleteMember(member: Member): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: '確認刪除人員',
+        message: `確定要刪除人員「${member.name}」嗎？此操作無法復原。`,
+        confirmText: '刪除',
+        cancelText: '取消',
+        type: 'danger'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.memberCrudService.deleteMember(member.id).subscribe({
+          next: () => {
+            this.snackBar.open('人員刪除成功', '關閉', { duration: 3000 });
+          },
+          error: (error) => {
+            this.snackBar.open('人員刪除失敗', '關閉', { duration: 3000 });
+            console.error('Error deleting member:', error);
+          }
+        });
+      }
+    });
+  }
 
   // 系統管理方法
   openCreateSystemDialog(): void {
@@ -66,7 +144,6 @@ export class DataManagementComponent implements OnInit {
         this.systemCrudService.createSystem(result).subscribe({
           next: () => {
             this.snackBar.open('系統新增成功', '關閉', { duration: 3000 });
-            this.refreshData();
           },
           error: (error) => {
             this.snackBar.open('系統新增失敗', '關閉', { duration: 3000 });
@@ -88,7 +165,6 @@ export class DataManagementComponent implements OnInit {
         this.systemCrudService.updateSystem(system.id, result).subscribe({
           next: () => {
             this.snackBar.open('系統更新成功', '關閉', { duration: 3000 });
-            this.refreshData();
           },
           error: (error) => {
             this.snackBar.open('系統更新失敗', '關閉', { duration: 3000 });
@@ -104,7 +180,6 @@ export class DataManagementComponent implements OnInit {
       this.systemCrudService.deleteSystem(system.id).subscribe({
         next: () => {
           this.snackBar.open('系統刪除成功', '關閉', { duration: 3000 });
-          this.refreshData();
         },
         error: (error) => {
           this.snackBar.open('系統刪除失敗', '關閉', { duration: 3000 });
@@ -126,7 +201,6 @@ export class DataManagementComponent implements OnInit {
         this.projectCrudService.createProject(result).subscribe({
           next: () => {
             this.snackBar.open('案件新增成功', '關閉', { duration: 3000 });
-            this.refreshData();
           },
           error: (error) => {
             this.snackBar.open('案件新增失敗', '關閉', { duration: 3000 });
@@ -148,7 +222,6 @@ export class DataManagementComponent implements OnInit {
         this.projectCrudService.updateProject(project.id, result).subscribe({
           next: () => {
             this.snackBar.open('案件更新成功', '關閉', { duration: 3000 });
-            this.refreshData();
           },
           error: (error) => {
             this.snackBar.open('案件更新失敗', '關閉', { duration: 3000 });
@@ -164,7 +237,6 @@ export class DataManagementComponent implements OnInit {
       this.projectCrudService.deleteProject(project.id).subscribe({
         next: () => {
           this.snackBar.open('案件刪除成功', '關閉', { duration: 3000 });
-          this.refreshData();
         },
         error: (error) => {
           this.snackBar.open('案件刪除失敗', '關閉', { duration: 3000 });
@@ -212,9 +284,8 @@ export class DataManagementComponent implements OnInit {
   }
 
   private refreshData(): void {
-    this.systemCrudService.refreshData();
-    this.projectCrudService.refreshData();
-    this.systems$ = this.systemCrudService.getSystems();
-    this.projects$ = this.projectCrudService.getProjects();
+    // 資料已由各自的 CRUD 服務自動更新，無需手動刷新
+    // this.memberCrudService, this.systemCrudService, this.projectCrudService 都使用 BehaviorSubject
+    // 會自動通知所有訂閱者資料變更
   }
 }
