@@ -19,6 +19,8 @@ import { MemberViewTabComponent } from './components/member-view-tab/member-view
 import { ProjectViewTabComponent } from './components/project-view-tab/project-view-tab.component';
 import { ProjectFormDialogComponent } from './components/project-form-dialog/project-form-dialog.component';
 import { TaskFormDialogComponent } from './components/task-form-dialog/task-form-dialog.component';
+import { SystemFormDialogComponent } from './components/system-form-dialog/system-form-dialog.component';
+import { SystemCrudService } from './services/system-crud.service';
 
 @Component({
   selector: 'app-project-management',
@@ -56,7 +58,8 @@ export class ProjectManagementComponent implements OnInit {
     private projectCrudService: ProjectCrudService,
     public statusHelper: StatusHelperService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private systemCrudService: SystemCrudService
   ) {
     this.groupedMemberData$ = this.projectDataService.getGroupedMemberData();
     this.groupedProjectData$ = this.projectDataService.getGroupedProjectData();
@@ -230,8 +233,47 @@ export class ProjectManagementComponent implements OnInit {
 
   // 系統 CRUD 操作
   openCreateSystemDialog(): void {
-    // TODO: 實現系統新增對話框
-    console.log('Open create system dialog');
+    const dialogRef = this.dialog.open(SystemFormDialogComponent, {
+      width: '500px',
+      data: { isEdit: false }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.systemCrudService.createSystem(result).subscribe({
+          next: (newSystem) => {
+            this.snackBar.open('系統新增成功', '關閉', { duration: 3000 });
+            this.refreshData();
+          },
+          error: (error) => {
+            this.snackBar.open('系統新增失敗', '關閉', { duration: 3000 });
+            console.error('Error creating system:', error);
+          }
+        });
+      }
+    });
+  }
+
+  openEditSystemDialog(system: any): void {
+    const dialogRef = this.dialog.open(SystemFormDialogComponent, {
+      width: '500px',
+      data: { system, isEdit: true }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.systemCrudService.updateSystem(system.id, result).subscribe({
+          next: (updatedSystem) => {
+            this.snackBar.open('系統更新成功', '關閉', { duration: 3000 });
+            this.refreshData();
+          },
+          error: (error) => {
+            this.snackBar.open('系統更新失敗', '關閉', { duration: 3000 });
+            console.error('Error updating system:', error);
+          }
+        });
+      }
+    });
   }
 
   // 刪除任務操作
