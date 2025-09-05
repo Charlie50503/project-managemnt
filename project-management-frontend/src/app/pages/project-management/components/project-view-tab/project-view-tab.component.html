@@ -159,6 +159,12 @@
                         <!-- 操作按鈕 -->
                         <div class="flex justify-end gap-1">
                           <button mat-icon-button 
+                                  (click)="onCopyTask(task)" 
+                                  class="text-green-600 hover:bg-green-50"
+                                  matTooltip="複製項目">
+                            <mat-icon class="text-xs">content_copy</mat-icon>
+                          </button>
+                          <button mat-icon-button 
                                   (click)="onEditTask(task)" 
                                   class="text-blue-600 hover:bg-blue-50"
                                   matTooltip="編輯項目">

@@ -36,6 +36,7 @@ export class MemberViewTabComponent {
   @Input() expandedRows!: Set<string>;
   @Output() toggleRow = new EventEmitter<string>();
   @Output() editTask = new EventEmitter<any>();
+  @Output() copyTask = new EventEmitter<any>();
   @Output() addTask = new EventEmitter<void>();
   @Output() deleteTask = new EventEmitter<any>();
 
@@ -113,6 +114,10 @@ export class MemberViewTabComponent {
 
   onEditTask(task: any): void {
     this.editTask.emit(task);
+  }
+
+  onCopyTask(task: any): void {
+    this.copyTask.emit(task);
   }
 
   onAddTask(): void {

@@ -89,6 +89,8 @@ router.get('/project/:projectName', (req, res) => {
 // POST /api/tasks - 新增任務
 router.post('/', (req, res) => {
   try {
+    console.log('Received task creation request:', req.body);
+    
     const { 
       member, project, system, task, complexity, priority, 
       status, startDate, endDate, actualEndDate 
@@ -96,6 +98,7 @@ router.post('/', (req, res) => {
     
     // 驗證必要欄位
     if (!member || !project || !system || !task || !complexity || !priority || !startDate || !endDate) {
+      console.log('Missing required fields:', { member, project, system, task, complexity, priority, startDate, endDate });
       return res.status(400).json({ 
         error: 'Required fields: member, project, system, task, complexity, priority, startDate, endDate' 
       });
@@ -118,6 +121,11 @@ router.post('/', (req, res) => {
       return res.status(400).json({ error: 'Invalid status. Must be one of: not-started, in-progress, completed' });
     }
     
+    console.log('Inserting task with params:', [
+      member, project, system, task, complexity, priority, 
+      status || 'not-started', startDate, endDate, actualEndDate || null
+    ]);
+    
     const result = db.run(
       `INSERT INTO tasks (
         member, project, system, task, complexity, priority, status,
@@ -128,6 +136,8 @@ router.post('/', (req, res) => {
         status || 'not-started', startDate, endDate, actualEndDate || null
       ]
     );
+    
+    console.log('Insert result:', result);
     
     const newTask = {
       id: result.id,
@@ -143,6 +153,7 @@ router.post('/', (req, res) => {
       actualEndDate: actualEndDate || null
     };
     
+    console.log('Returning new task:', newTask);
     res.status(201).json(newTask);
   } catch (error) {
     console.error('Error creating task:', error);

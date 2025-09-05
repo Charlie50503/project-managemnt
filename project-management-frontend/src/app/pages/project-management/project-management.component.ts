@@ -232,6 +232,45 @@ export class ProjectManagementComponent implements OnInit {
     });
   }
 
+  openCopyTaskDialog(task: Task): void {
+    // 創建一個基於現有任務的新任務資料，清空任務名稱讓使用者重新填寫
+    const taskCopy: Partial<Task> = {
+      project: task.project,
+      system: task.system,
+      member: task.member,
+      task: '', // 清空任務名稱
+      complexity: task.complexity,
+      priority: task.priority,
+      status: 'not-started', // 重設為未開始
+      startDate: task.startDate,
+      endDate: task.endDate,
+      actualEndDate: null // 清空實際完成日期
+    };
+
+    const dialogRef = this.dialog.open(TaskFormDialogComponent, {
+      width: '800px',
+      data: { 
+        task: taskCopy, 
+        isEdit: false, // 這是新增模式，不是編輯模式
+        projectName: task.project 
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.projectCrudService.createTask(result).subscribe({
+          next: () => {
+            this.snackBar.open('任務複製成功', '關閉', { duration: 3000 });
+          },
+          error: (error) => {
+            this.snackBar.open('任務複製失敗', '關閉', { duration: 3000 });
+            console.error('Error copying task:', error);
+          }
+        });
+      }
+    });
+  }
+
   // 系統 CRUD 操作
   openCreateSystemDialog(): void {
     const dialogRef = this.dialog.open(SystemFormDialogComponent, {

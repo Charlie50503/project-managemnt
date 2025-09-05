@@ -319,6 +319,13 @@
                     <div class="flex gap-1">
                       <button 
                         mat-icon-button 
+                        (click)="copyProject(project)"
+                        class="text-green-600 hover:bg-green-50"
+                        matTooltip="複製為任務">
+                        <mat-icon class="text-sm">content_copy</mat-icon>
+                      </button>
+                      <button 
+                        mat-icon-button 
                         (click)="openEditProjectDialog(project)"
                         class="text-blue-600 hover:bg-blue-50"
                         matTooltip="編輯案件">

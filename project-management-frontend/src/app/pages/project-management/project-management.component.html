@@ -96,6 +96,7 @@
             [expandedRows]="expandedRows"
             (toggleRow)="toggleRow($event)"
             (editTask)="openEditTaskDialog($event)"
+            (copyTask)="openCopyTaskDialog($event)"
             (addTask)="openCreateTaskDialog()"
             (deleteTask)="openDeleteTaskDialog($event)">
           </app-member-view-tab>
@@ -114,6 +115,7 @@
             (editProject)="openEditProjectDialog($event)"
             (addTask)="openCreateTaskDialog($event)"
             (editTask)="openEditTaskDialog($event)"
+            (copyTask)="openCopyTaskDialog($event)"
             (deleteTask)="openDeleteTaskDialog($event)">
           </app-project-view-tab>
         </div>

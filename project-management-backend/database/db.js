@@ -93,8 +93,9 @@ class DatabaseWrapper {
   get(sql, params = []) {
     try {
       const stmt = this.db.prepare(sql);
-      return stmt.get(params);
+      return stmt.get(...params);
     } catch (err) {
+      console.error('Database get error:', err);
       throw err;
     }
   }
@@ -102,8 +103,9 @@ class DatabaseWrapper {
   all(sql, params = []) {
     try {
       const stmt = this.db.prepare(sql);
-      return stmt.all(params);
+      return stmt.all(...params);
     } catch (err) {
+      console.error('Database all error:', err);
       throw err;
     }
   }
@@ -111,9 +113,12 @@ class DatabaseWrapper {
   run(sql, params = []) {
     try {
       const stmt = this.db.prepare(sql);
-      const result = stmt.run(params);
+      const result = stmt.run(...params);
       return { id: result.lastInsertRowid, changes: result.changes };
     } catch (err) {
+      console.error('Database run error:', err);
+      console.error('SQL:', sql);
+      console.error('Params:', params);
       throw err;
     }
   }

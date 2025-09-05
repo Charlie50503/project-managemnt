@@ -38,6 +38,7 @@ export class ProjectViewTabComponent {
   @Output() editProject = new EventEmitter<any>();
   @Output() addTask = new EventEmitter<string>();
   @Output() editTask = new EventEmitter<any>();
+  @Output() copyTask = new EventEmitter<any>();
   @Output() deleteTask = new EventEmitter<any>();
 
   filteredData$!: Observable<GroupedProjectData[]>;
@@ -109,6 +110,10 @@ export class ProjectViewTabComponent {
 
   onEditTask(task: any): void {
     this.editTask.emit(task);
+  }
+
+  onCopyTask(task: any): void {
+    this.copyTask.emit(task);
   }
 
   onDeleteTask(task: any): void {

@@ -83,6 +83,9 @@ export class TaskFormDialogComponent implements OnInit {
   ngOnInit(): void {
     if (this.data.isEdit && this.data.task) {
       this.populateForm(this.data.task);
+    } else if (this.data.task) {
+      // 複製模式：有預填資料但不是編輯模式
+      this.populateForm(this.data.task);
     } else if (this.data.projectName) {
       this.taskForm.patchValue({ project: this.data.projectName });
     }

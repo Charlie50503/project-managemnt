@@ -14,11 +14,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { SystemCrudService, System } from '../project-management/services/system-crud.service';
 import { ProjectCrudService } from '../../core/services/project-crud.service';
 import { MemberCrudService } from '../project-management/services/member-crud.service';
-import { Project } from '../../shared/models/project.model';
+import { Project, Task } from '../../shared/models/project.model';
 import { Member } from '../../shared/models/member.model';
 import { SystemFormDialogComponent } from '../project-management/components/system-form-dialog/system-form-dialog.component';
 import { ProjectFormDialogComponent } from '../project-management/components/project-form-dialog/project-form-dialog.component';
 import { MemberFormDialogComponent } from '../project-management/components/member-form-dialog/member-form-dialog.component';
+import { TaskFormDialogComponent } from '../project-management/components/task-form-dialog/task-form-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { DataExportImportDialogComponent } from '../../shared/components/data-export-import-dialog/data-export-import-dialog.component';
 
@@ -228,6 +229,45 @@ export class DataManagementComponent implements OnInit {
           error: (error) => {
             this.snackBar.open('案件更新失敗', '關閉', { duration: 3000 });
             console.error('Error updating project:', error);
+          }
+        });
+      }
+    });
+  }
+
+  copyProject(project: Project): void {
+    // 創建一個基於現有案件的新任務資料
+    const taskData: Partial<Task> = {
+      project: project.project,
+      system: project.system,
+      member: project.projectManager, // 預設負責人為專案經理
+      task: '', // 任務名稱留空讓使用者填寫
+      complexity: '中', // 預設複雜度
+      priority: '中', // 預設優先級
+      status: 'not-started', // 預設狀態
+      startDate: project.startDate,
+      endDate: project.expectedEndDate,
+      actualEndDate: null
+    };
+
+    const dialogRef = this.dialog.open(TaskFormDialogComponent, {
+      width: '800px',
+      data: { 
+        task: taskData, 
+        isEdit: false, // 這是新增模式，不是編輯模式
+        projectName: project.project 
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.projectCrudService.createTask(result).subscribe({
+          next: () => {
+            this.snackBar.open('基於案件資料的任務新增成功', '關閉', { duration: 3000 });
+          },
+          error: (error) => {
+            this.snackBar.open('任務新增失敗', '關閉', { duration: 3000 });
+            console.error('Error creating task from project:', error);
           }
         });
       }
