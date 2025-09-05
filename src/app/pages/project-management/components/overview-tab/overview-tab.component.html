@@ -24,8 +24,8 @@
     
     <mat-card class="text-center">
       <mat-card-content>
-        <div class="text-2xl font-bold text-red-600">{{ stats.delayedTasks }}</div>
-        <div class="text-sm text-gray-600">延遲任務</div>
+        <div class="text-2xl font-bold text-gray-600">{{ stats.notStartedTasks }}</div>
+        <div class="text-sm text-gray-600">未開始任務</div>
       </mat-card-content>
     </mat-card>
     
@@ -49,13 +49,13 @@
       <div class="space-y-3" *ngIf="groupedMemberData$ | async as memberData">
         <ng-container *ngFor="let group of memberData">
           <ng-container *ngFor="let task of group.tasks">
-            <div *ngIf="task.status === 'delayed'" 
+            <div *ngIf="task.status === 'in-progress' && isOverdue(task)" 
                  class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
               <div>
                 <span class="font-medium">{{ task.project }} - {{ task.task }}</span>
                 <span class="text-sm text-gray-600 ml-2">({{ task.member }})</span>
               </div>
-              <span class="text-red-600 text-sm">進度延遲，需重新評估</span>
+              <span class="text-red-600 text-sm">可能需要關注進度</span>
             </div>
           </ng-container>
         </ng-container>

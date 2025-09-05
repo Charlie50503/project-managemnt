@@ -9,8 +9,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSliderModule } from '@angular/material/slider';
-import { MatChipsModule } from '@angular/material/chips';
+
 import { Observable } from 'rxjs';
 import { Task, TaskStatus, Priority, Complexity, Project } from '../../../../shared/models/project.model';
 import { Member } from '../../../../shared/models/member.model';
@@ -37,8 +36,7 @@ export interface TaskFormDialogData {
     MatNativeDateModule,
     MatButtonModule,
     MatIconModule,
-    MatSliderModule,
-    MatChipsModule
+
   ]
 })
 export class TaskFormDialogComponent implements OnInit {
@@ -48,9 +46,9 @@ export class TaskFormDialogComponent implements OnInit {
   screenshots: string[] = [];
   
   statusOptions: { value: TaskStatus; label: string }[] = [
+    { value: 'not-started', label: '未開始' },
     { value: 'in-progress', label: '進行中' },
-    { value: 'completed', label: '已完成' },
-    { value: 'delayed', label: '延遲' }
+    { value: 'completed', label: '已完成' }
   ];
 
   priorityOptions: { value: Priority; label: string }[] = [
@@ -92,14 +90,10 @@ export class TaskFormDialogComponent implements OnInit {
       member: ['', Validators.required],
       complexity: ['中', Validators.required],
       priority: ['中', Validators.required],
-      progress: [0, [Validators.min(0), Validators.max(100)]],
-      status: ['in-progress', Validators.required],
+      status: ['not-started', Validators.required],
       startDate: ['', Validators.required],
       endDate: ['', Validators.required],
-      actualEndDate: [''],
-      workload: [50, [Validators.min(1), Validators.max(100)]],
-      demo: [''],
-      newScreenshot: ['']
+      actualEndDate: ['']
     }, { validators: this.dateValidator });
   }
 
@@ -114,7 +108,6 @@ export class TaskFormDialogComponent implements OnInit {
   }
 
   private populateForm(task: Task): void {
-    this.screenshots = [...task.screenshots];
     this.taskForm.patchValue({
       project: task.project,
       system: task.system,
@@ -122,13 +115,10 @@ export class TaskFormDialogComponent implements OnInit {
       member: task.member,
       complexity: task.complexity,
       priority: task.priority,
-      progress: task.progress,
       status: task.status,
       startDate: new Date(task.startDate),
       endDate: new Date(task.endDate),
-      actualEndDate: task.actualEndDate ? new Date(task.actualEndDate) : null,
-      workload: task.workload,
-      demo: task.demo
+      actualEndDate: task.actualEndDate ? new Date(task.actualEndDate) : null
     });
   }
 
@@ -142,43 +132,13 @@ export class TaskFormDialogComponent implements OnInit {
     });
   }
 
-  onProgressChange(): void {
-    const progress = this.taskForm.get('progress')?.value;
-    if (progress === 100 && this.taskForm.get('status')?.value !== 'completed') {
-      this.taskForm.patchValue({ 
-        status: 'completed',
-        actualEndDate: new Date()
-      });
-    } else if (progress < 100 && this.taskForm.get('status')?.value === 'completed') {
-      this.taskForm.patchValue({ 
-        status: 'in-progress',
-        actualEndDate: null
-      });
-    }
-  }
-
   onStatusChange(): void {
     const status = this.taskForm.get('status')?.value;
     if (status === 'completed') {
-      this.taskForm.patchValue({ 
-        progress: 100,
-        actualEndDate: new Date()
-      });
-    } else if (status === 'in-progress') {
+      this.taskForm.patchValue({ actualEndDate: new Date() });
+    } else {
       this.taskForm.patchValue({ actualEndDate: null });
     }
-  }
-
-  addScreenshot(): void {
-    const newScreenshot = this.taskForm.get('newScreenshot')?.value?.trim();
-    if (newScreenshot && !this.screenshots.includes(newScreenshot)) {
-      this.screenshots.push(newScreenshot);
-      this.taskForm.get('newScreenshot')?.setValue('');
-    }
-  }
-
-  removeScreenshot(index: number): void {
-    this.screenshots.splice(index, 1);
   }
 
   onSubmit(): void {
@@ -191,14 +151,10 @@ export class TaskFormDialogComponent implements OnInit {
         member: formValue.member,
         complexity: formValue.complexity,
         priority: formValue.priority,
-        progress: formValue.progress,
         status: formValue.status,
         startDate: this.formatDate(formValue.startDate),
         endDate: this.formatDate(formValue.endDate),
-        actualEndDate: formValue.actualEndDate ? this.formatDate(formValue.actualEndDate) : null,
-        workload: formValue.workload,
-        demo: formValue.demo || null,
-        screenshots: [...this.screenshots]
+        actualEndDate: formValue.actualEndDate ? this.formatDate(formValue.actualEndDate) : null
       };
 
       this.dialogRef.close(taskData);
@@ -214,9 +170,7 @@ export class TaskFormDialogComponent implements OnInit {
     return date.toISOString().split('T')[0];
   }
 
-  formatLabel(value: number): string {
-    return `${value}%`;
-  }
+
 
   getErrorMessage(fieldName: string): string {
     const field = this.taskForm.get(fieldName);
@@ -241,9 +195,7 @@ export class TaskFormDialogComponent implements OnInit {
       task: '工作項名稱',
       member: '負責人員',
       startDate: '開始日期',
-      endDate: '預計結束日期',
-      workload: '工作負荷',
-      progress: '進度'
+      endDate: '預計結束日期'
     };
     return labels[fieldName] || fieldName;
   }

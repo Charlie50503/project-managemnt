@@ -21,4 +21,11 @@ export class OverviewTabComponent {
   @Input() groupedProjectData$!: Observable<GroupedProjectData[]>;
 
   constructor() {}
+
+  isOverdue(task: any): boolean {
+    // 簡單的邏輯：如果任務進行中且已超過預計結束日期
+    const today = new Date();
+    const endDate = new Date(task.endDate);
+    return today > endDate;
+  }
 }

@@ -44,6 +44,7 @@ export class ProjectManagementComponent implements OnInit {
   activeTab = 'overview';
   searchTerm = '';
   statusFilter = 'all';
+  hideCompleted = false;
   expandedRows = new Set<string>();
 
   groupedMemberData$: Observable<GroupedMemberData[]>;

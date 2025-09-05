@@ -36,6 +36,7 @@ export class ProjectViewTabComponent {
   @Input() groupedProjectData$!: Observable<GroupedProjectData[]>;
   @Input() searchTerm!: string;
   @Input() statusFilter!: string;
+  @Input() hideCompleted!: boolean;
   @Input() expandedRows!: Set<string>;
   @Output() toggleRow = new EventEmitter<string>();
   @Output() editProject = new EventEmitter<any>();
@@ -43,7 +44,7 @@ export class ProjectViewTabComponent {
   @Output() editTask = new EventEmitter<any>();
 
   filteredData$!: Observable<GroupedProjectData[]>;
-  displayedColumns: string[] = ['expand', 'project', 'taskStats', 'progress', 'status', 'milestones', 'risks', 'actions'];
+  displayedColumns: string[] = ['expand', 'project', 'taskStats', 'progress', 'status', 'actions'];
 
   constructor(public statusHelper: StatusHelperService) {}
 
@@ -63,6 +64,11 @@ export class ProjectViewTabComponent {
 
   private filterData(data: GroupedProjectData[]): GroupedProjectData[] {
     return data.filter(project => {
+      // 過濾已完成項目
+      if (this.hideCompleted && project.status === 'completed') {
+        return false;
+      }
+      
       const matchesSearch = project.project.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
                            project.system.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
                            project.membersList.some(member => 

@@ -1,5 +1,5 @@
-export type TaskStatus = 'completed' | 'in-progress' | 'delayed';
-export type ProjectStatus = 'normal' | 'delayed' | 'risk';
+export type TaskStatus = 'not-started' | 'in-progress' | 'completed';
+export type ProjectStatus = 'not-started' | 'in-progress' | 'completed';
 export type Priority = '高' | '中' | '低';
 export type Complexity = '高' | '中' | '低';
 
@@ -11,14 +11,10 @@ export interface Task {
   task: string;
   complexity: Complexity;
   priority: Priority;
-  progress: number;
   status: TaskStatus;
   startDate: string;
   endDate: string;
   actualEndDate: string | null;
-  workload: number;
-  demo: string | null;
-  screenshots: string[];
 }
 
 export interface Project {
@@ -28,16 +24,12 @@ export interface Project {
   totalTasks: number;
   completedTasks: number;
   inProgressTasks: number;
-  delayedTasks: number;
+  notStartedTasks: number;
   overallProgress: number;
   status: ProjectStatus;
   projectManager: string;
   startDate: string;
   expectedEndDate: string;
-  currentMilestone: string;
-  nextMilestone: string;
-  demo: string | null;
-  risks: string[];
 }
 
 export interface GroupedMemberData {
@@ -67,7 +59,7 @@ export interface GroupedProjectData {
   totalTasks: number;
   completedTasks: number;
   inProgressTasks: number;
-  delayedTasks: number;
+  notStartedTasks: number;
   overallProgress: number;
 }
 

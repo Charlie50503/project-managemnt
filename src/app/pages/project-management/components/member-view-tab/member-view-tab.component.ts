@@ -36,13 +36,14 @@ export class MemberViewTabComponent {
   @Input() groupedMemberData$!: Observable<GroupedMemberData[]>;
   @Input() searchTerm!: string;
   @Input() statusFilter!: string;
+  @Input() hideCompleted!: boolean;
   @Input() expandedRows!: Set<string>;
   @Output() toggleRow = new EventEmitter<string>();
   @Output() editTask = new EventEmitter<any>();
 
   filteredData$!: Observable<GroupedMemberData[]>;
 
-  displayedColumns: string[] = ['expand', 'member', 'project', 'taskStats', 'progress', 'status', 'results'];
+  displayedColumns: string[] = ['expand', 'member', 'project', 'taskStats', 'status', 'results'];
 
   constructor(public statusHelper: StatusHelperService) {}
 
@@ -64,6 +65,11 @@ export class MemberViewTabComponent {
 
   private filterData(data: GroupedMemberData[]): GroupedMemberData[] {
     return data.filter(group => {
+      // 過濾已完成項目
+      if (this.hideCompleted && group.overallStatus === 'completed') {
+        return false;
+      }
+      
       const matchesSearch = group.member.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
                            group.project.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
                            group.system.toLowerCase().includes(this.searchTerm.toLowerCase()) ||

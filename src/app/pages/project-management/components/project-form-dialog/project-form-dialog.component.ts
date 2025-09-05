@@ -44,9 +44,9 @@ export class ProjectFormDialogComponent implements OnInit {
   risks: string[] = [];
   
   statusOptions: { value: ProjectStatus; label: string }[] = [
-    { value: 'normal', label: '正常' },
-    { value: 'delayed', label: '延遲' },
-    { value: 'risk', label: '風險' }
+    { value: 'not-started', label: '未開始' },
+    { value: 'in-progress', label: '進行中' },
+    { value: 'completed', label: '已完成' }
   ];
 
   constructor(
@@ -75,7 +75,7 @@ export class ProjectFormDialogComponent implements OnInit {
       currentMilestone: [''],
       nextMilestone: [''],
       demo: [''],
-      status: ['normal', Validators.required],
+      status: ['not-started', Validators.required],
       newRisk: ['']
     }, { validators: this.dateValidator });
   }
@@ -91,16 +91,12 @@ export class ProjectFormDialogComponent implements OnInit {
   }
 
   private populateForm(project: Project): void {
-    this.risks = [...project.risks];
     this.projectForm.patchValue({
       project: project.project,
       system: project.system,
       projectManager: project.projectManager,
       startDate: new Date(project.startDate),
       expectedEndDate: new Date(project.expectedEndDate),
-      currentMilestone: project.currentMilestone,
-      nextMilestone: project.nextMilestone,
-      demo: project.demo,
       status: project.status
     });
   }
@@ -126,15 +122,11 @@ export class ProjectFormDialogComponent implements OnInit {
         projectManager: formValue.projectManager,
         startDate: this.formatDate(formValue.startDate),
         expectedEndDate: this.formatDate(formValue.expectedEndDate),
-        currentMilestone: formValue.currentMilestone || '專案啟動',
-        nextMilestone: formValue.nextMilestone || '待規劃',
-        demo: formValue.demo || null,
         status: formValue.status,
-        risks: [...this.risks],
         totalTasks: this.data.project?.totalTasks || 0,
         completedTasks: this.data.project?.completedTasks || 0,
         inProgressTasks: this.data.project?.inProgressTasks || 0,
-        delayedTasks: this.data.project?.delayedTasks || 0,
+        notStartedTasks: this.data.project?.notStartedTasks || 0,
         overallProgress: this.data.project?.overallProgress || 0
       };
 
