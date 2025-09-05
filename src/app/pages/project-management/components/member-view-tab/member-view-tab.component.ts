@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable, map } from 'rxjs';
-import { trigger, state, style, transition, animate } from '@angular/animations';
+
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,13 +24,7 @@ import { StatusHelperService } from '../../../../shared/services/status-helper.s
     MatProgressBarModule,
     MatChipsModule
   ],
-  animations: [
-    trigger('detailExpand', [
-      state('collapsed', style({height: '0px', minHeight: '0'})),
-      state('expanded', style({height: '*'})),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-    ]),
-  ]
+
 })
 export class MemberViewTabComponent {
   @Input() groupedMemberData$!: Observable<GroupedMemberData[]>;
@@ -43,11 +37,11 @@ export class MemberViewTabComponent {
 
   filteredData$!: Observable<GroupedMemberData[]>;
 
-  displayedColumns: string[] = ['expand', 'member', 'project', 'taskStats', 'status', 'results'];
+  displayedColumns: string[] = ['member', 'project', 'taskStats', 'status', 'results'];
+  displayedColumnsWithExpand: string[] = [...this.displayedColumns, 'expand'];
+  expandedElement: GroupedMemberData | null = null;
 
   constructor(public statusHelper: StatusHelperService) {}
-
-  isExpanded = (index: number, group: GroupedMemberData) => this.isRowExpanded(this.getRowKey(group));
 
   ngOnInit(): void {
     this.filteredData$ = this.groupedMemberData$.pipe(

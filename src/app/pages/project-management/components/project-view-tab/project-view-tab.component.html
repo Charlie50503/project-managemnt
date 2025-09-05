@@ -1,6 +1,6 @@
 <mat-card class="overflow-hidden">
   <div class="overflow-x-auto">
-    <table mat-table [dataSource]="(filteredData$ | async) || []" class="w-full">
+    <table mat-table [dataSource]="(filteredData$ | async) || []" multiTemplateDataRows class="w-full">
       
       <!-- 展開按鈕欄 -->
       <ng-container matColumnDef="expand">
@@ -49,7 +49,7 @@
             <mat-progress-bar 
               mode="determinate" 
               [value]="project.overallProgress"
-              [color]="project.overallProgress === 100 ? 'primary' : (project.status === 'delayed' || project.status === 'risk' ? 'warn' : 'primary')"
+              [color]="project.overallProgress === 100 ? 'primary' : 'primary'"
               class="w-16 mr-2">
             </mat-progress-bar>
             <span class="text-sm text-gray-600">{{ project.overallProgress }}%</span>
@@ -94,57 +94,59 @@
 
       <!-- 展開的成員詳情欄 -->
       <ng-container matColumnDef="expandedDetail">
-        <td mat-cell *matCellDef="let project" [attr.colspan]="displayedColumns.length">
-          <div class="expanded-detail" 
-               [@detailExpand]="isRowExpanded(getRowKey(project)) ? 'expanded' : 'collapsed'">
-            <div class="p-4 bg-green-25 border-l-4 border-green-200">
-              <h4 class="font-medium text-gray-800 mb-3">專案成員與任務詳情</h4>
-              <div class="space-y-4">
-                <div *ngFor="let member of project.membersList" class="border border-gray-200 rounded-lg p-3">
-                  <div class="mb-2">
-                    <h5 class="font-medium text-gray-700">{{ member.member }}</h5>
-                  </div>
-                  
-                  <div class="space-y-2">
-                    <div *ngFor="let task of member.tasks" 
-                         class="grid grid-cols-1 md:grid-cols-4 gap-2 items-center p-2 bg-gray-50 rounded">
-                      <div class="font-medium text-sm">{{ task.task }}</div>
-                      
-                      <div class="flex gap-1">
-                        <mat-chip 
-                          [ngClass]="statusHelper.getComplexityColor(task.complexity)"
-                          class="text-xs">
-                          {{ task.complexity }}
-                        </mat-chip>
-                        <mat-chip 
-                          [ngClass]="statusHelper.getPriorityColor(task.priority)"
-                          class="text-xs">
-                          {{ task.priority }}
-                        </mat-chip>
-                      </div>
-                      
-                      <div class="text-xs text-gray-600">
-                        {{ task.startDate }} ~ {{ task.endDate }}
-                      </div>
-                      
-                      <mat-chip 
-                        [ngClass]="statusHelper.getStatusColor(task.status)"
-                        class="text-xs">
-                        {{ statusHelper.getStatusText(task.status) }}
-                      </mat-chip>
-                      
-                      <div class="flex items-center gap-2">
-                        <div class="text-xs text-gray-600">
-                          <div *ngIf="task.actualEndDate" class="text-green-600">
-                            完成: {{ task.actualEndDate }}
-                          </div>
+        <td mat-cell *matCellDef="let project" [attr.colspan]="displayedColumnsWithExpand.length">
+          <div class="expanded-detail-wrapper" 
+               [class.expanded-detail-wrapper-expanded]="isRowExpanded(getRowKey(project))">
+            <div class="expanded-detail">
+              <div class="p-4 bg-green-25 border-l-4 border-green-200">
+                <h4 class="font-medium text-gray-800 mb-3">專案成員與任務詳情</h4>
+                <div class="space-y-4">
+                  <div *ngFor="let member of project.membersList" class="border border-gray-200 rounded-lg p-3">
+                    <div class="mb-2">
+                      <h5 class="font-medium text-gray-700">{{ member.member }}</h5>
+                    </div>
+                    
+                    <div class="space-y-2">
+                      <div *ngFor="let task of member.tasks" 
+                           class="grid grid-cols-1 md:grid-cols-4 gap-2 items-center p-2 bg-gray-50 rounded">
+                        <div class="font-medium text-sm">{{ task.task }}</div>
+                        
+                        <div class="flex gap-1">
+                          <mat-chip 
+                            [ngClass]="statusHelper.getComplexityColor(task.complexity)"
+                            class="text-xs">
+                            {{ task.complexity }}
+                          </mat-chip>
+                          <mat-chip 
+                            [ngClass]="statusHelper.getPriorityColor(task.priority)"
+                            class="text-xs">
+                            {{ task.priority }}
+                          </mat-chip>
                         </div>
-                        <button mat-icon-button 
-                                (click)="onEditTask(task)" 
-                                class="text-blue-600 hover:bg-blue-50"
-                                matTooltip="編輯工作項">
-                          <mat-icon class="text-xs">edit</mat-icon>
-                        </button>
+                        
+                        <div class="text-xs text-gray-600">
+                          {{ task.startDate }} ~ {{ task.endDate }}
+                        </div>
+                        
+                        <mat-chip 
+                          [ngClass]="statusHelper.getStatusColor(task.status)"
+                          class="text-xs">
+                          {{ statusHelper.getStatusText(task.status) }}
+                        </mat-chip>
+                        
+                        <div class="flex items-center gap-2">
+                          <div class="text-xs text-gray-600">
+                            <div *ngIf="task.actualEndDate" class="text-green-600">
+                              完成: {{ task.actualEndDate }}
+                            </div>
+                          </div>
+                          <button mat-icon-button 
+                                  (click)="onEditTask(task)" 
+                                  class="text-blue-600 hover:bg-blue-50"
+                                  matTooltip="編輯工作項">
+                            <mat-icon class="text-xs">edit</mat-icon>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -155,12 +157,13 @@
         </td>
       </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let project; columns: displayedColumns;"
-          class="hover:bg-gray-50 cursor-pointer"
+      <tr mat-header-row *matHeaderRowDef="displayedColumnsWithExpand"></tr>
+      <tr mat-row *matRowDef="let project; columns: displayedColumnsWithExpand;"
+          class="hover:bg-gray-50 cursor-pointer element-row"
+          [class.expanded-row]="isRowExpanded(getRowKey(project))"
           (click)="onToggleRow(getRowKey(project))"></tr>
-      <tr mat-row *matRowDef="let project; columns: ['expandedDetail']; when: isExpanded"
-          class="expanded-row"></tr>
+      <tr mat-row *matRowDef="let project; columns: ['expandedDetail']" 
+          class="detail-row"></tr>
     </table>
   </div>
 </mat-card>

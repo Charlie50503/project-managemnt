@@ -1,24 +1,36 @@
-.expanded-detail {
-  overflow: hidden;
-}
-
-.expanded-row {
+tr.detail-row {
   height: 0;
 }
 
-.mat-mdc-row .mat-mdc-cell {
+tr.element-row {
+  cursor: pointer;
+}
+
+tr.element-row:not(.expanded-row):hover {
+  background: whitesmoke;
+}
+
+tr.element-row:not(.expanded-row):active {
+  background: #efefef;
+}
+
+.element-row td {
   border-bottom-width: 0;
 }
 
-@keyframes detailExpand {
-  from {
-    height: 0;
-  }
-  to {
-    height: auto;
-  }
+.expanded-detail-wrapper {
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 0fr;
+  grid-template-columns: 100%;
+  transition: grid-template-rows 225ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.expanded-detail-wrapper-expanded {
+  grid-template-rows: 1fr;
 }
 
 .expanded-detail {
-  animation: detailExpand 0.3s ease-in-out;
+  display: flex;
+  min-height: 0;
 }

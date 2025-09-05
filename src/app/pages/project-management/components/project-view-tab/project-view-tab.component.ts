@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable, map } from 'rxjs';
-import { trigger, state, style, transition, animate } from '@angular/animations';
+
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,13 +24,7 @@ import { StatusHelperService } from '../../../../shared/services/status-helper.s
     MatProgressBarModule,
     MatChipsModule
   ],
-  animations: [
-    trigger('detailExpand', [
-      state('collapsed', style({height: '0px', minHeight: '0'})),
-      state('expanded', style({height: '*'})),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-    ]),
-  ]
+
 })
 export class ProjectViewTabComponent {
   @Input() groupedProjectData$!: Observable<GroupedProjectData[]>;
@@ -44,7 +38,9 @@ export class ProjectViewTabComponent {
   @Output() editTask = new EventEmitter<any>();
 
   filteredData$!: Observable<GroupedProjectData[]>;
-  displayedColumns: string[] = ['expand', 'project', 'taskStats', 'progress', 'status', 'actions'];
+  displayedColumns: string[] = ['project', 'taskStats', 'progress', 'status', 'actions'];
+  displayedColumnsWithExpand: string[] = [...this.displayedColumns, 'expand'];
+  expandedElement: GroupedProjectData | null = null;
 
   constructor(public statusHelper: StatusHelperService) {}
 
@@ -98,7 +94,7 @@ export class ProjectViewTabComponent {
     return project.project;
   }
 
-  isExpanded = (index: number, project: GroupedProjectData) => this.isRowExpanded(this.getRowKey(project));
+
 
   onEditProject(project: any): void {
     this.editProject.emit(project);
