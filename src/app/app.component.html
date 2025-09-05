@@ -1,0 +1,4 @@
+<router-outlet></router-outlet>
+<div [hidden]="!(isLoading$ | async)">
+  <app-primary-spinner ></app-primary-spinner>
+</div>
