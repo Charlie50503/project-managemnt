@@ -11,7 +11,7 @@ export class ProjectCrudService {
   private dataSubject = new BehaviorSubject<ProjectData | null>(null);
   private membersSubject = new BehaviorSubject<Member[]>([]);
   private readonly API_BASE_URL = 'http://localhost:3000/api';
-  
+
   public data$ = this.dataSubject.asObservable();
   public members$ = this.membersSubject.asObservable();
   public projects$ = this.data$.pipe(
@@ -25,11 +25,11 @@ export class ProjectCrudService {
 
   private loadData(): void {
     console.log('Loading project data from API');
-    
+
     // 同時載入專案和任務資料
     const projects$ = this.http.get<Project[]>(`${this.API_BASE_URL}/projects`);
     const tasks$ = this.http.get<Task[]>(`${this.API_BASE_URL}/tasks`);
-    
+
     // 合併兩個請求的結果
     projects$.subscribe({
       next: (projects) => {
@@ -66,8 +66,13 @@ export class ProjectCrudService {
       map(newProject => {
         const currentData = this.dataSubject.value;
         if (currentData) {
-          currentData.projectTableData.push(newProject);
-          this.dataSubject.next(currentData);
+          // 建立新的陣列來觸發變更檢測
+          const updatedProjects = [...currentData.projectTableData, newProject];
+          const newData = {
+            ...currentData,
+            projectTableData: updatedProjects
+          };
+          this.dataSubject.next(newData);
         }
         return newProject;
       })
@@ -81,8 +86,15 @@ export class ProjectCrudService {
         if (currentData) {
           const index = currentData.projectTableData.findIndex(p => p.id === id);
           if (index !== -1) {
-            currentData.projectTableData[index] = updatedProject;
-            this.dataSubject.next(currentData);
+            // 建立新的陣列來觸發變更檢測
+            const updatedProjects = [...currentData.projectTableData];
+            updatedProjects[index] = updatedProject;
+
+            const newData = {
+              ...currentData,
+              projectTableData: updatedProjects
+            };
+            this.dataSubject.next(newData);
           }
         }
         return updatedProject;
@@ -98,14 +110,19 @@ export class ProjectCrudService {
           const projectIndex = currentData.projectTableData.findIndex(p => p.id === id);
           if (projectIndex !== -1) {
             const projectName = currentData.projectTableData[projectIndex].project;
-            
-            // 移除專案和相關任務
-            currentData.projectTableData.splice(projectIndex, 1);
-            currentData.memberTableData = currentData.memberTableData.filter(task => 
+
+            // 建立新的陣列來觸發變更檢測
+            const updatedProjects = currentData.projectTableData.filter(p => p.id !== id);
+            const updatedTasks = currentData.memberTableData.filter(task =>
               task.project !== projectName
             );
-            
-            this.dataSubject.next(currentData);
+
+            const newData = {
+              ...currentData,
+              projectTableData: updatedProjects,
+              memberTableData: updatedTasks
+            };
+            this.dataSubject.next(newData);
           }
         }
         return true;
@@ -119,8 +136,13 @@ export class ProjectCrudService {
       map(newTask => {
         const currentData = this.dataSubject.value;
         if (currentData) {
-          currentData.memberTableData.push(newTask);
-          this.dataSubject.next(currentData);
+          // 建立新的陣列來觸發變更檢測
+          const updatedTasks = [...currentData.memberTableData, newTask];
+          const newData = {
+            ...currentData,
+            memberTableData: updatedTasks
+          };
+          this.dataSubject.next(newData);
         }
         return newTask;
       })
@@ -134,8 +156,15 @@ export class ProjectCrudService {
         if (currentData) {
           const index = currentData.memberTableData.findIndex(t => t.id === id);
           if (index !== -1) {
-            currentData.memberTableData[index] = updatedTask;
-            this.dataSubject.next(currentData);
+            // 建立新的陣列來觸發變更檢測
+            const updatedTasks = [...currentData.memberTableData];
+            updatedTasks[index] = updatedTask;
+
+            const newData = {
+              ...currentData,
+              memberTableData: updatedTasks
+            };
+            this.dataSubject.next(newData);
           }
         }
         return updatedTask;
@@ -148,11 +177,13 @@ export class ProjectCrudService {
       map(() => {
         const currentData = this.dataSubject.value;
         if (currentData) {
-          const taskIndex = currentData.memberTableData.findIndex(task => task.id === id);
-          if (taskIndex !== -1) {
-            currentData.memberTableData.splice(taskIndex, 1);
-            this.dataSubject.next(currentData);
-          }
+          // 建立新的陣列來觸發變更檢測
+          const updatedTasks = currentData.memberTableData.filter(task => task.id !== id);
+          const newData = {
+            ...currentData,
+            memberTableData: updatedTasks
+          };
+          this.dataSubject.next(newData);
         }
         return true;
       })
@@ -196,11 +227,11 @@ export class ProjectCrudService {
       console.error('No project data to export');
       return;
     }
-    
+
     const dataStr = JSON.stringify(data, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
-    
+
     const link = document.createElement('a');
     link.href = url;
     link.download = 'project-data.json';
