@@ -14,6 +14,7 @@ import { Observable } from 'rxjs';
 import { Project, ProjectStatus } from '../../../../shared/models/project.model';
 import { Member } from '../../../../shared/models/member.model';
 import { ProjectCrudService } from '../../../../core/services/project-crud.service';
+import { SystemCrudService, System } from '../../services/system-crud.service';
 
 export interface ProjectFormDialogData {
   project?: Project;
@@ -45,7 +46,7 @@ export interface ProjectFormDialogData {
 export class ProjectFormDialogComponent implements OnInit {
   projectForm: FormGroup;
   members$: Observable<Member[]>;
-  risks: string[] = [];
+  systems$: Observable<System[]>;
   
   statusOptions: { value: ProjectStatus; label: string }[] = [
     { value: 'not-started', label: '未開始' },
@@ -57,9 +58,11 @@ export class ProjectFormDialogComponent implements OnInit {
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<ProjectFormDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ProjectFormDialogData,
-    private projectCrudService: ProjectCrudService
+    private projectCrudService: ProjectCrudService,
+    private systemCrudService: SystemCrudService
   ) {
     this.members$ = this.projectCrudService.members$;
+    this.systems$ = this.systemCrudService.getSystems();
     this.projectForm = this.createForm();
   }
 
@@ -76,11 +79,8 @@ export class ProjectFormDialogComponent implements OnInit {
       projectManager: ['', Validators.required],
       startDate: ['', Validators.required],
       expectedEndDate: ['', Validators.required],
-      currentMilestone: [''],
-      nextMilestone: [''],
       demo: [''],
-      status: ['not-started', Validators.required],
-      newRisk: ['']
+      status: ['not-started', Validators.required]
     }, { validators: this.dateValidator });
   }
 
@@ -105,17 +105,7 @@ export class ProjectFormDialogComponent implements OnInit {
     });
   }
 
-  addRisk(): void {
-    const newRisk = this.projectForm.get('newRisk')?.value?.trim();
-    if (newRisk && !this.risks.includes(newRisk)) {
-      this.risks.push(newRisk);
-      this.projectForm.get('newRisk')?.setValue('');
-    }
-  }
 
-  removeRisk(index: number): void {
-    this.risks.splice(index, 1);
-  }
 
   onSubmit(): void {
     if (this.projectForm.valid) {

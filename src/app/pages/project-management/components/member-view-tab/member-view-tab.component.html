@@ -114,13 +114,19 @@
                         {{ task.startDate }} ~ {{ task.endDate }}
                       </div>
                       
-                      <!-- 編輯按鈕 -->
-                      <div class="flex justify-end">
+                      <!-- 操作按鈕 -->
+                      <div class="flex justify-end gap-1">
                         <button mat-icon-button 
                                 (click)="onEditTask(task); $event.stopPropagation()" 
                                 class="text-blue-600 hover:bg-blue-50"
                                 matTooltip="編輯項目">
                           <mat-icon class="text-sm">edit</mat-icon>
+                        </button>
+                        <button mat-icon-button 
+                                (click)="onDeleteTask(task); $event.stopPropagation()" 
+                                class="text-red-600 hover:bg-red-50"
+                                matTooltip="刪除項目">
+                          <mat-icon class="text-sm">delete</mat-icon>
                         </button>
                       </div>
                     </div>

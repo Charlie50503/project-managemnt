@@ -228,6 +228,41 @@ export class ProjectManagementComponent implements OnInit {
     });
   }
 
+  // 系統 CRUD 操作
+  openCreateSystemDialog(): void {
+    // TODO: 實現系統新增對話框
+    console.log('Open create system dialog');
+  }
+
+  // 刪除任務操作
+  openDeleteTaskDialog(task: Task): void {
+    const dialogRef = this.dialog.open(TaskFormDialogComponent, {
+      width: '400px',
+      data: {
+        task,
+        isEdit: false,
+        isDelete: true,
+        title: '確認刪除',
+        message: `確定要刪除任務「${task.task}」嗎？此操作無法復原。`
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === 'confirm') {
+        this.projectCrudService.deleteTask(task.id).subscribe({
+          next: () => {
+            this.snackBar.open('任務刪除成功', '關閉', { duration: 3000 });
+            this.refreshData();
+          },
+          error: (error) => {
+            this.snackBar.open('任務刪除失敗', '關閉', { duration: 3000 });
+            console.error('Error deleting task:', error);
+          }
+        });
+      }
+    });
+  }
+
   private refreshData(): void {
     this.projectCrudService.refreshData();
     // 重新訂閱資料

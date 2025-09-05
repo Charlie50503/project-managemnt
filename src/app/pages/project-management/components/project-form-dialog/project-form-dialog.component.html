@@ -12,7 +12,11 @@
 
       <mat-form-field appearance="outline">
         <mat-label>系統名稱 *</mat-label>
-        <input matInput formControlName="system" placeholder="請輸入系統名稱">
+        <mat-select formControlName="system">
+          <mat-option *ngFor="let system of systems$ | async" [value]="system.name">
+            {{ system.name }} ({{ system.code }})
+          </mat-option>
+        </mat-select>
         <mat-error>{{ getErrorMessage('system') }}</mat-error>
       </mat-form-field>
     </div>
@@ -58,18 +62,7 @@
       </mat-form-field>
     </div>
 
-    <!-- 里程碑 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <mat-form-field appearance="outline">
-        <mat-label>當前里程碑</mat-label>
-        <input matInput formControlName="currentMilestone" placeholder="請輸入當前里程碑">
-      </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>下一個里程碑</mat-label>
-        <input matInput formControlName="nextMilestone" placeholder="請輸入下一個里程碑">
-      </mat-form-field>
-    </div>
 
     <!-- Demo 連結 -->
     <mat-form-field appearance="outline" class="w-full">
@@ -77,36 +70,7 @@
       <input matInput formControlName="demo" placeholder="https://example.com/demo">
     </mat-form-field>
 
-    <!-- 風險管理 -->
-    <div class="space-y-2">
-      <label class="text-sm font-medium text-gray-700">風險項目</label>
-      
-      <!-- 新增風險 -->
-      <div class="flex gap-2">
-        <mat-form-field appearance="outline" class="flex-1">
-          <mat-label>新增風險</mat-label>
-          <input matInput formControlName="newRisk" placeholder="請輸入風險描述" 
-                 (keyup.enter)="addRisk()">
-        </mat-form-field>
-        <button mat-icon-button type="button" (click)="addRisk()" 
-                [disabled]="!projectForm.get('newRisk')?.value?.trim()">
-          <mat-icon>add</mat-icon>
-        </button>
-      </div>
 
-      <!-- 風險列表 -->
-      <div *ngIf="risks.length > 0" class="space-y-2">
-        <mat-chip-set>
-          <mat-chip *ngFor="let risk of risks; let i = index" 
-                    class="bg-red-100 text-red-800">
-            {{ risk }}
-            <button matChipRemove (click)="removeRisk(i)">
-              <mat-icon>cancel</mat-icon>
-            </button>
-          </mat-chip>
-        </mat-chip-set>
-      </div>
-    </div>
   </form>
 </mat-dialog-content>
 

@@ -10,6 +10,14 @@
         <div class="flex gap-2">
           <button 
             mat-raised-button 
+            color="warn"
+            (click)="openCreateSystemDialog()"
+            class="flex items-center gap-2">
+            <mat-icon>computer</mat-icon>
+            新增系統
+          </button>
+          <button 
+            mat-raised-button 
             color="primary"
             (click)="openCreateProjectDialog()"
             class="flex items-center gap-2">
@@ -88,7 +96,8 @@
             [expandedRows]="expandedRows"
             (toggleRow)="toggleRow($event)"
             (editTask)="openEditTaskDialog($event)"
-            (addTask)="openCreateTaskDialog()">
+            (addTask)="openCreateTaskDialog()"
+            (deleteTask)="openDeleteTaskDialog($event)">
           </app-member-view-tab>
         </div>
       </mat-tab>
@@ -104,7 +113,8 @@
             (toggleRow)="toggleRow($event)"
             (editProject)="openEditProjectDialog($event)"
             (addTask)="openCreateTaskDialog($event)"
-            (editTask)="openEditTaskDialog($event)">
+            (editTask)="openEditTaskDialog($event)"
+            (deleteTask)="openDeleteTaskDialog($event)">
           </app-project-view-tab>
         </div>
       </mat-tab>

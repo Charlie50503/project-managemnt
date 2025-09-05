@@ -37,6 +37,7 @@ export class MemberViewTabComponent {
   @Output() toggleRow = new EventEmitter<string>();
   @Output() editTask = new EventEmitter<any>();
   @Output() addTask = new EventEmitter<void>();
+  @Output() deleteTask = new EventEmitter<any>();
 
   filteredData$!: Observable<GroupedMemberData[]>;
 
@@ -116,5 +117,9 @@ export class MemberViewTabComponent {
 
   onAddTask(): void {
     this.addTask.emit();
+  }
+
+  onDeleteTask(task: any): void {
+    this.deleteTask.emit(task);
   }
 }
