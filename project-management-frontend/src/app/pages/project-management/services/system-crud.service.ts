@@ -20,8 +20,15 @@ export class SystemCrudService {
   private systemsSubject = new BehaviorSubject<System[]>([]);
   public systems$ = this.systemsSubject.asObservable();
   private readonly ASSETS_PATH = 'assets/data/systems.json';
+  private autoExportEnabled = false; // 控制是否自動匯出
+
   constructor(private http: HttpClient) {
     this.loadInitialData();
+  }
+
+  // 啟用/停用自動匯出
+  setAutoExport(enabled: boolean): void {
+    this.autoExportEnabled = enabled;
   }
 
   // 獲取所有系統
@@ -46,6 +53,11 @@ export class SystemCrudService {
     const currentSystems = this.systemsSubject.value;
     const updatedSystems = [...currentSystems, newSystem];
     this.systemsSubject.next(updatedSystems);
+    
+    // 自動匯出（如果啟用）
+    if (this.autoExportEnabled) {
+      setTimeout(() => this.exportToFile(), 100);
+    }
 
     return of(newSystem).pipe(delay(500)); // 模擬 API 延遲
   }
