@@ -1,0 +1,178 @@
+<h2 mat-dialog-title>{{ data.isEdit ? '編輯工作項' : '新增工作項' }}</h2>
+
+<mat-dialog-content class="max-h-96 overflow-y-auto">
+  <form [formGroup]="taskForm" class="space-y-4">
+    <!-- 基本資訊 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <mat-form-field appearance="outline">
+        <mat-label>所屬案件 *</mat-label>
+        <mat-select formControlName="project" (selectionChange)="onProjectChange()">
+          <mat-option *ngFor="let project of projects$ | async" [value]="project.project">
+            {{ project.project }}
+          </mat-option>
+        </mat-select>
+        <mat-error>{{ getErrorMessage('project') }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>系統名稱</mat-label>
+        <input matInput formControlName="system" readonly>
+      </mat-form-field>
+    </div>
+
+    <!-- 工作項與負責人 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <mat-form-field appearance="outline">
+        <mat-label>工作項名稱 *</mat-label>
+        <input matInput formControlName="task" placeholder="請輸入工作項名稱">
+        <mat-error>{{ getErrorMessage('task') }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>負責人員 *</mat-label>
+        <mat-select formControlName="member">
+          <mat-option *ngFor="let member of members$ | async" [value]="member.name">
+            {{ member.name }}
+          </mat-option>
+        </mat-select>
+        <mat-error>{{ getErrorMessage('member') }}</mat-error>
+      </mat-form-field>
+    </div>
+
+    <!-- 複雜度與優先級 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <mat-form-field appearance="outline">
+        <mat-label>複雜度</mat-label>
+        <mat-select formControlName="complexity">
+          <mat-option *ngFor="let option of complexityOptions" [value]="option.value">
+            {{ option.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>優先級</mat-label>
+        <mat-select formControlName="priority">
+          <mat-option *ngFor="let option of priorityOptions" [value]="option.value">
+            {{ option.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- 日期 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <mat-form-field appearance="outline">
+        <mat-label>開始日期 *</mat-label>
+        <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+        <mat-error>{{ getErrorMessage('startDate') }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>預計結束日期 *</mat-label>
+        <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+        <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+        <mat-datepicker #endPicker></mat-datepicker>
+        <mat-error>{{ getErrorMessage('endDate') }}</mat-error>
+      </mat-form-field>
+    </div>
+
+    <!-- 實際完成日期與狀態 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <mat-form-field appearance="outline">
+        <mat-label>實際完成日期</mat-label>
+        <input matInput [matDatepicker]="actualPicker" formControlName="actualEndDate">
+        <mat-datepicker-toggle matIconSuffix [for]="actualPicker"></mat-datepicker-toggle>
+        <mat-datepicker #actualPicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>狀態</mat-label>
+        <mat-select formControlName="status" (selectionChange)="onStatusChange()">
+          <mat-option *ngFor="let option of statusOptions" [value]="option.value">
+            {{ option.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- 進度與工作負荷 -->
+    <div class="space-y-4">
+      <div>
+        <label class="text-sm font-medium text-gray-700 mb-2 block">
+          進度: {{ taskForm.get('progress')?.value }}%
+        </label>
+        <mat-slider 
+          min="0" 
+          max="100" 
+          step="5" 
+          discrete
+          [displayWith]="formatLabel">
+          <input matSliderThumb formControlName="progress" (input)="onProgressChange()">
+        </mat-slider>
+      </div>
+
+      <div>
+        <label class="text-sm font-medium text-gray-700 mb-2 block">
+          工作負荷: {{ taskForm.get('workload')?.value }}%
+        </label>
+        <mat-slider 
+          min="1" 
+          max="100" 
+          step="5" 
+          discrete
+          [displayWith]="formatLabel">
+          <input matSliderThumb formControlName="workload">
+        </mat-slider>
+      </div>
+    </div>
+
+    <!-- Demo 連結 -->
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Demo 連結</mat-label>
+      <input matInput formControlName="demo" placeholder="https://example.com/demo">
+    </mat-form-field>
+
+    <!-- 截圖管理 -->
+    <div class="space-y-2">
+      <label class="text-sm font-medium text-gray-700">截圖檔案</label>
+      
+      <!-- 新增截圖 -->
+      <div class="flex gap-2">
+        <mat-form-field appearance="outline" class="flex-1">
+          <mat-label>新增截圖</mat-label>
+          <input matInput formControlName="newScreenshot" placeholder="請輸入截圖檔案名稱" 
+                 (keyup.enter)="addScreenshot()">
+        </mat-form-field>
+        <button mat-icon-button type="button" (click)="addScreenshot()" 
+                [disabled]="!taskForm.get('newScreenshot')?.value?.trim()">
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+
+      <!-- 截圖列表 -->
+      <div *ngIf="screenshots.length > 0" class="space-y-2">
+        <mat-chip-set>
+          <mat-chip *ngFor="let screenshot of screenshots; let i = index" 
+                    class="bg-blue-100 text-blue-800">
+            {{ screenshot }}
+            <button matChipRemove (click)="removeScreenshot(i)">
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip>
+        </mat-chip-set>
+      </div>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="p-4">
+  <button mat-button (click)="onCancel()">取消</button>
+  <button mat-raised-button color="primary" 
+          (click)="onSubmit()" 
+          [disabled]="taskForm.invalid">
+    {{ data.isEdit ? '更新' : '新增' }}
+  </button>
+</mat-dialog-actions>

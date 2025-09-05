@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '', redirectTo: 'home/project-management', pathMatch: 'full' },
   {
     path: 'login',
     loadComponent: () =>
@@ -23,6 +23,13 @@ const routes: Routes = [
         loadChildren: () =>
           import('./pages/overview/overview.module').then(
             (m) => m.OverviewModule,
+          ),
+      },
+      {
+        path: 'project-management',
+        loadChildren: () =>
+          import('./pages/project-management/project-management.module').then(
+            (m) => m.ProjectManagementModule,
           ),
       },
     ],

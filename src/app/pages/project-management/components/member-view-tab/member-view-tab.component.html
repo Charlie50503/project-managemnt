@@ -1,0 +1,175 @@
+<mat-card class="overflow-hidden">
+  <div class="overflow-x-auto">
+    <table mat-table [dataSource]="(filteredData$ | async) || []" class="w-full">
+      
+      <!-- 展開按鈕欄 -->
+      <ng-container matColumnDef="expand">
+        <th mat-header-cell *matHeaderCellDef class="w-12"></th>
+        <td mat-cell *matCellDef="let group" class="w-12">
+          <button 
+            mat-icon-button 
+            (click)="onToggleRow(getRowKey(group))"
+            class="text-gray-400">
+            <mat-icon>{{ isRowExpanded(getRowKey(group)) ? 'expand_less' : 'expand_more' }}</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <!-- 成員欄 -->
+      <ng-container matColumnDef="member">
+        <th mat-header-cell *matHeaderCellDef>成員</th>
+        <td mat-cell *matCellDef="let group">
+          <div class="font-medium text-gray-900">{{ group.member }}</div>
+          <div class="text-sm text-gray-500">負荷: {{ group.workload }}%</div>
+        </td>
+      </ng-container>
+
+      <!-- 專案/系統欄 -->
+      <ng-container matColumnDef="project">
+        <th mat-header-cell *matHeaderCellDef>專案/系統</th>
+        <td mat-cell *matCellDef="let group">
+          <div class="font-medium text-gray-900">{{ group.project }}</div>
+          <div class="text-sm text-gray-500">{{ group.system }}</div>
+        </td>
+      </ng-container>
+
+      <!-- 任務統計欄 -->
+      <ng-container matColumnDef="taskStats">
+        <th mat-header-cell *matHeaderCellDef>任務統計</th>
+        <td mat-cell *matCellDef="let group" class="text-sm">
+          <div>總任務: {{ group.tasks.length }} 項</div>
+          <div class="text-green-600">完成: {{ getTaskStatusCount(group.tasks, 'completed') }}</div>
+          <div class="text-blue-600">進行: {{ getTaskStatusCount(group.tasks, 'in-progress') }}</div>
+          <div *ngIf="getTaskStatusCount(group.tasks, 'delayed') > 0" class="text-red-600">
+            延遲: {{ getTaskStatusCount(group.tasks, 'delayed') }}
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- 整體進度欄 -->
+      <ng-container matColumnDef="progress">
+        <th mat-header-cell *matHeaderCellDef>整體進度</th>
+        <td mat-cell *matCellDef="let group">
+          <div class="flex items-center">
+            <mat-progress-bar 
+              mode="determinate" 
+              [value]="group.overallProgress"
+              [color]="group.overallProgress === 100 ? 'primary' : (group.overallStatus === 'delayed' ? 'warn' : 'primary')"
+              class="w-16 mr-2">
+            </mat-progress-bar>
+            <span class="text-sm text-gray-600">{{ group.overallProgress }}%</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- 狀態欄 -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>狀態</th>
+        <td mat-cell *matCellDef="let group">
+          <mat-chip 
+            [ngClass]="statusHelper.getStatusColor(group.overallStatus)"
+            class="text-xs">
+            {{ statusHelper.getStatusText(group.overallStatus) }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <!-- 成果欄 -->
+      <ng-container matColumnDef="results">
+        <th mat-header-cell *matHeaderCellDef>成果</th>
+        <td mat-cell *matCellDef="let group">
+          <div class="space-y-1">
+            <div *ngIf="group.demos.length > 0" class="text-xs text-blue-600">
+              🔗 {{ group.demos.length }} 個Demo
+            </div>
+            <div *ngIf="group.screenshots > 0" class="text-xs text-gray-600">
+              📸 {{ group.screenshots }} 個截圖
+            </div>
+            <span *ngIf="group.demos.length === 0 && group.screenshots === 0" 
+                  class="text-xs text-gray-400">無</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- 展開的任務詳情欄 -->
+      <ng-container matColumnDef="expandedDetail">
+        <td mat-cell *matCellDef="let group" [attr.colspan]="displayedColumns.length">
+          <div class="expanded-detail" 
+               [@detailExpand]="isRowExpanded(getRowKey(group)) ? 'expanded' : 'collapsed'">
+            <div class="p-4 bg-blue-25 border-l-4 border-blue-200">
+              <div class="space-y-3">
+                <div *ngFor="let task of group.tasks" class="border-b border-gray-200 pb-3 last:border-b-0">
+                  <div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
+                    <div class="font-medium text-gray-800">{{ task.task }}</div>
+                    
+                    <div class="flex gap-2">
+                      <mat-chip 
+                        [ngClass]="statusHelper.getComplexityColor(task.complexity)"
+                        class="text-xs">
+                        複雜度: {{ task.complexity }}
+                      </mat-chip>
+                      <mat-chip 
+                        [ngClass]="statusHelper.getPriorityColor(task.priority)"
+                        class="text-xs">
+                        優先: {{ task.priority }}
+                      </mat-chip>
+                    </div>
+                    
+                    <div class="flex items-center">
+                      <mat-progress-bar 
+                        mode="determinate" 
+                        [value]="task.progress"
+                        [color]="task.progress === 100 ? 'primary' : (task.status === 'delayed' ? 'warn' : 'primary')"
+                        class="w-12 mr-2">
+                      </mat-progress-bar>
+                      <span class="text-xs text-gray-600">{{ task.progress }}%</span>
+                    </div>
+                    
+                    <mat-chip 
+                      [ngClass]="statusHelper.getStatusColor(task.status)"
+                      class="text-xs">
+                      {{ statusHelper.getStatusText(task.status) }}
+                    </mat-chip>
+                    
+                    <div class="text-xs space-y-1">
+                      <div>開始: {{ task.startDate }}</div>
+                      <div>預計: {{ task.endDate }}</div>
+                      <div *ngIf="task.actualEndDate" class="text-green-600">
+                        完成: {{ task.actualEndDate }}
+                      </div>
+                    </div>
+                    
+                    <div class="text-xs space-y-1">
+                      <a *ngIf="task.demo" 
+                         [href]="task.demo" 
+                         target="_blank" 
+                         class="text-blue-600 hover:underline block">
+                        🔗 Demo
+                      </a>
+                      <div *ngIf="task.screenshots.length > 0" class="text-gray-600">
+                        📸 {{ task.screenshots.join(', ') }}
+                      </div>
+                      <button mat-icon-button 
+                              (click)="onEditTask(task)" 
+                              class="text-blue-600 hover:bg-blue-50"
+                              matTooltip="編輯工作項">
+                        <mat-icon class="text-sm">edit</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let group; columns: displayedColumns;"
+          class="hover:bg-gray-50 cursor-pointer"
+          (click)="onToggleRow(getRowKey(group))"></tr>
+      <tr mat-row *matRowDef="let group; columns: ['expandedDetail']; when: isExpanded"
+          class="expanded-row"></tr>
+    </table>
+  </div>
+</mat-card>

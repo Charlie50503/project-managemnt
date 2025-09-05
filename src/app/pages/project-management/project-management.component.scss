@@ -1,0 +1,53 @@
+// Project Management Component Styles
+
+.mat-mdc-tab-group {
+  .mat-mdc-tab-header {
+    border-bottom: 1px solid #e5e7eb;
+  }
+}
+
+.mat-mdc-form-field {
+  .mat-mdc-text-field-wrapper {
+    background-color: white;
+  }
+}
+
+// Custom chip styles for status indicators
+.mat-mdc-chip {
+  &.bg-green-100 {
+    background-color: #dcfce7 !important;
+    color: #166534 !important;
+  }
+  
+  &.bg-blue-100 {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+  }
+  
+  &.bg-red-100 {
+    background-color: #fee2e2 !important;
+    color: #dc2626 !important;
+  }
+  
+  &.bg-yellow-100 {
+    background-color: #fef3c7 !important;
+    color: #d97706 !important;
+  }
+  
+  &.bg-purple-100 {
+    background-color: #f3e8ff !important;
+    color: #7c3aed !important;
+  }
+  
+  &.bg-gray-100 {
+    background-color: #f3f4f6 !important;
+    color: #374151 !important;
+  }
+}
+
+// Progress bar custom colors
+.mat-mdc-progress-bar {
+  &.mat-warn .mdc-linear-progress__bar-inner {
+    border-color: #dc2626;
+  }
+}

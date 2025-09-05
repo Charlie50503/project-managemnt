@@ -1,0 +1,121 @@
+<div class="space-y-6">
+  <!-- 快速統計 -->
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-4" *ngIf="overviewStats$ | async as stats">
+    <mat-card class="text-center">
+      <mat-card-content>
+        <div class="text-2xl font-bold text-blue-600">{{ stats.totalProjects }}</div>
+        <div class="text-sm text-gray-600">進行中專案</div>
+      </mat-card-content>
+    </mat-card>
+    
+    <mat-card class="text-center">
+      <mat-card-content>
+        <div class="text-2xl font-bold text-green-600">{{ stats.completedTasks }}</div>
+        <div class="text-sm text-gray-600">已完成任務</div>
+      </mat-card-content>
+    </mat-card>
+    
+    <mat-card class="text-center">
+      <mat-card-content>
+        <div class="text-2xl font-bold text-yellow-600">{{ stats.inProgressTasks }}</div>
+        <div class="text-sm text-gray-600">進行中任務</div>
+      </mat-card-content>
+    </mat-card>
+    
+    <mat-card class="text-center">
+      <mat-card-content>
+        <div class="text-2xl font-bold text-red-600">{{ stats.delayedTasks }}</div>
+        <div class="text-sm text-gray-600">延遲任務</div>
+      </mat-card-content>
+    </mat-card>
+    
+    <mat-card class="text-center">
+      <mat-card-content>
+        <div class="text-2xl font-bold text-purple-600">{{ stats.avgWorkload }}%</div>
+        <div class="text-sm text-gray-600">平均工作負荷</div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- 風險警示 -->
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title class="text-red-600 flex items-center gap-2">
+        <mat-icon class="text-red-600">warning</mat-icon>
+        需要注意的項目
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="space-y-3" *ngIf="groupedMemberData$ | async as memberData">
+        <ng-container *ngFor="let group of memberData">
+          <ng-container *ngFor="let task of group.tasks">
+            <div *ngIf="task.status === 'delayed'" 
+                 class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+              <div>
+                <span class="font-medium">{{ task.project }} - {{ task.task }}</span>
+                <span class="text-sm text-gray-600 ml-2">({{ task.member }})</span>
+              </div>
+              <span class="text-red-600 text-sm">進度延遲，需重新評估</span>
+            </div>
+          </ng-container>
+        </ng-container>
+        
+        <ng-container *ngFor="let project of (groupedProjectData$ | async)">
+          <div *ngFor="let risk of project.risks" 
+               class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+            <div>
+              <span class="font-medium">{{ project.project }}</span>
+              <span class="text-sm text-gray-600 ml-2">({{ project.system }})</span>
+            </div>
+            <span class="text-yellow-600 text-sm">{{ risk }}</span>
+          </div>
+        </ng-container>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- 本期成果與下期目標 -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title class="text-green-600">本期完成成果</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="space-y-3" *ngIf="groupedMemberData$ | async as memberData">
+          <ng-container *ngFor="let group of memberData">
+            <ng-container *ngFor="let task of group.tasks">
+              <div *ngIf="task.status === 'completed'" class="flex items-center gap-3">
+                <mat-icon class="text-green-600">check_circle</mat-icon>
+                <div>
+                  <div class="font-medium">{{ task.project }} - {{ task.task }}</div>
+                  <div class="text-sm text-gray-600">
+                    {{ task.actualEndDate ? '於 ' + task.actualEndDate + ' 完成' : '已完成' }}
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+          </ng-container>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title class="text-blue-600">下期重點目標</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="space-y-3" *ngIf="groupedProjectData$ | async as projectData">
+          <ng-container *ngFor="let project of projectData">
+            <div class="flex items-center gap-3">
+              <mat-icon class="text-blue-600">schedule</mat-icon>
+              <div>
+                <div class="font-medium">{{ project.nextMilestone }}</div>
+                <div class="text-sm text-gray-600">{{ project.project }} - 預計 {{ project.expectedEndDate }}</div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,110 @@
+<div class="min-h-screen bg-gray-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- 標題與操作區 -->
+    <div class="mb-6">
+      <div class="flex justify-between items-center mb-4">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 mb-2">專案進度管理系統</h1>
+          <p class="text-gray-600">雙週進度報告 - {{ getCurrentDate() }}</p>
+        </div>
+        <div class="flex gap-2">
+          <button 
+            mat-raised-button 
+            color="primary"
+            (click)="openCreateProjectDialog()"
+            class="flex items-center gap-2">
+            <mat-icon>add</mat-icon>
+            新增案件
+          </button>
+          <button 
+            mat-raised-button 
+            color="accent"
+            (click)="openCreateTaskDialog()"
+            class="flex items-center gap-2">
+            <mat-icon>assignment_add</mat-icon>
+            新增工作項
+          </button>
+          <button 
+            mat-button 
+            (click)="exportToExcel()"
+            class="flex items-center gap-2">
+            <mat-icon>download</mat-icon>
+            匯出 Excel
+          </button>
+        </div>
+      </div>
+
+      <!-- 搜尋與篩選 -->
+      <div class="flex gap-4 mb-4">
+        <mat-form-field class="flex-1" appearance="outline">
+          <mat-label>搜尋成員、專案或任務...</mat-label>
+          <input 
+            matInput 
+            [value]="searchTerm"
+            (input)="onSearchChange($any($event.target).value || '')"
+            placeholder="搜尋成員、專案或任務...">
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline">
+          <mat-label>狀態篩選</mat-label>
+          <mat-select 
+            [value]="statusFilter"
+            (selectionChange)="onStatusFilterChange($event.value)">
+            <mat-option value="all">所有狀態</mat-option>
+            <mat-option value="completed">已完成</mat-option>
+            <mat-option value="in-progress">進行中</mat-option>
+            <mat-option value="delayed">延遲</mat-option>
+            <mat-option value="normal">正常</mat-option>
+            <mat-option value="risk">風險</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- 導航標籤 -->
+    <mat-tab-group 
+      [(selectedIndex)]="selectedTabIndex" 
+      class="mb-6"
+      (selectedTabChange)="onTabChange($event)">
+      
+      <mat-tab label="總覽摘要">
+        <div class="pt-6">
+          <app-overview-tab 
+            [overviewStats$]="overviewStats$"
+            [groupedMemberData$]="groupedMemberData$"
+            [groupedProjectData$]="groupedProjectData$">
+          </app-overview-tab>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="人員視角表格">
+        <div class="pt-6">
+          <app-member-view-tab
+            [groupedMemberData$]="groupedMemberData$"
+            [searchTerm]="searchTerm"
+            [statusFilter]="statusFilter"
+            [expandedRows]="expandedRows"
+            (toggleRow)="toggleRow($event)"
+            (editTask)="openEditTaskDialog($event)">
+          </app-member-view-tab>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="專案視角表格">
+        <div class="pt-6">
+          <app-project-view-tab
+            [groupedProjectData$]="groupedProjectData$"
+            [searchTerm]="searchTerm"
+            [statusFilter]="statusFilter"
+            [expandedRows]="expandedRows"
+            (toggleRow)="toggleRow($event)"
+            (editProject)="openEditProjectDialog($event)"
+            (addTask)="openCreateTaskDialog($event)"
+            (editTask)="openEditTaskDialog($event)">
+          </app-project-view-tab>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>
