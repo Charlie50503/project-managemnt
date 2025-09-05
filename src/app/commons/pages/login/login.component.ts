@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Component } from '@angular/core';
@@ -22,13 +22,12 @@ import { UserInfo } from 'src/app/api/v1/models';
     templateUrl: './login.component.html',
     styleUrls: ['./login.component.scss'],
     imports: [
-        MatFormFieldModule,
-        MatInputModule,
-        MatIconModule,
-        ReactiveFormsModule,
-        MatButtonModule,
-        CommonModule,
-    ]
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    ReactiveFormsModule,
+    MatButtonModule
+]
 })
 export class LoginComponent {
   // 設置密碼是否可以看的到

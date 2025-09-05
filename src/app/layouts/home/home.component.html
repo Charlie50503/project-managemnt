@@ -4,12 +4,16 @@
       <mat-icon>menu</mat-icon>
     </button>
     <a class="text-2xl font-bold mr-4" routerLink="/main/SystemManagement/List">系統名稱</a>
-    <p class="font-semibold" *ngIf="!isProduction">({{environmentName}})</p>
+    @if (!isProduction) {
+      <p class="font-semibold">({{environmentName}})</p>
+    }
   </div>
   <div class="flex items-center">
-    <p class="flex font-semibold text-xl mb-0 mr-4" *ngIf="userInfo">
-      {{ userInfo.branchName }}/{{ userInfo.chineseName }}
-    </p>
+    @if (userInfo) {
+      <p class="flex font-semibold text-xl mb-0 mr-4">
+        {{ userInfo.branchName }}/{{ userInfo.chineseName }}
+      </p>
+    }
     <button mat-icon-button class="logout" [routerLink]="['/login']">
       <mat-icon>logout</mat-icon>
     </button>
@@ -18,27 +22,35 @@
 <mat-drawer-container class="main-wrapper " autosize>
   <mat-drawer #drawer mode="side" opened class="min-w-[240px]">
     <ul>
-      <li *ngFor="let page of modulePageList" class="flex w-full">
-        <a *ngIf="page.type == 'link'" [routerLink]="[page.route]" routerLinkActive="bg-primary-800 text-white"
-          class="px-4 py-4 text-base font-semibold leading-none hover:text-white hover:bg-primary-700 flex w-full">
-          {{ page.pageName }}
-        </a>
-        <mat-expansion-panel *ngIf="page.type == 'menu'" class="shadow-none w-full rounded-none">
-          <mat-expansion-panel-header class="text-base font-semibol hover:text-white hover:bg-primary-200 h-12 px-4"
+      @for (page of modulePageList; track page) {
+        <li class="flex w-full">
+          @if (page.type == 'link') {
+            <a [routerLink]="[page.route]" routerLinkActive="bg-primary-800 text-white"
+              class="px-4 py-4 text-base font-semibold leading-none hover:text-white hover:bg-primary-700 flex w-full">
+              {{ page.pageName }}
+            </a>
+          }
+          @if (page.type == 'menu') {
+            <mat-expansion-panel class="shadow-none w-full rounded-none">
+              <mat-expansion-panel-header class="text-base font-semibol hover:text-white hover:bg-primary-200 h-12 px-4"
             [ngClass]="
               router.isActive(page.route, false) ? 'bg-primary-200' : ''
             ">
-            <mat-panel-title class="text-base">
-              {{ page.pageName }}</mat-panel-title>
-          </mat-expansion-panel-header>
-          <mat-nav-list *ngFor="let pageChild of page.children; index as i" class="flex w-full py-0">
-            <a [routerLink]="[pageChild.route]" routerLinkActive="bg-primary-800 text-white"
-              class="px-4 py-4 text-base font-semibold leading-none hover:text-white hover:bg-primary-700 flex w-full">{{
-              pageChild.pageName }}</a>
-            <mat-divider [class.hidden]="page.children?.length === i + 1"></mat-divider>
-          </mat-nav-list>
-        </mat-expansion-panel>
-      </li>
+                <mat-panel-title class="text-base">
+                {{ page.pageName }}</mat-panel-title>
+              </mat-expansion-panel-header>
+              @for (pageChild of page.children; track pageChild; let i = $index) {
+                <mat-nav-list class="flex w-full py-0">
+                  <a [routerLink]="[pageChild.route]" routerLinkActive="bg-primary-800 text-white"
+                    class="px-4 py-4 text-base font-semibold leading-none hover:text-white hover:bg-primary-700 flex w-full">{{
+                  pageChild.pageName }}</a>
+                  <mat-divider [class.hidden]="page.children?.length === i + 1"></mat-divider>
+                </mat-nav-list>
+              }
+            </mat-expansion-panel>
+          }
+        </li>
+      }
     </ul>
   </mat-drawer>
   <mat-drawer-content>

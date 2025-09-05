@@ -15,16 +15,16 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^19.2.14",
-    "@angular/cdk": "^19.2.19",
-    "@angular/common": "^19.2.14",
-    "@angular/compiler": "^19.2.14",
-    "@angular/core": "^19.2.14",
-    "@angular/forms": "^19.2.14",
-    "@angular/material": "^19.2.19",
-    "@angular/platform-browser": "^19.2.14",
-    "@angular/platform-browser-dynamic": "^19.2.14",
-    "@angular/router": "^19.2.14",
+    "@angular/animations": "^20.2.4",
+    "@angular/cdk": "^20.2.2",
+    "@angular/common": "^20.2.4",
+    "@angular/compiler": "^20.2.4",
+    "@angular/core": "^20.2.4",
+    "@angular/forms": "^20.2.4",
+    "@angular/material": "^20.2.2",
+    "@angular/platform-browser": "^20.2.4",
+    "@angular/platform-browser-dynamic": "^20.2.4",
+    "@angular/router": "^20.2.4",
     "@auth0/angular-jwt": "^5.2.0",
     "ngx-spinner": "^16.0.2",
     "rxjs": "~7.8.0",
@@ -32,9 +32,9 @@
     "zone.js": "~0.15.1"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^19.2.15",
-    "@angular/cli": "^19.2.15",
-    "@angular/compiler-cli": "^19.2.14",
+    "@angular/build": "^20.2.2",
+    "@angular/cli": "^20.2.2",
+    "@angular/compiler-cli": "^20.2.4",
     "@types/body-parser": "^1.19.5",
     "@types/jasmine": "~5.1.0",
     "autoprefixer": "^10.4.16",
@@ -50,6 +50,6 @@
     "prettier": "^3.1.0",
     "prettier-plugin-tailwindcss": "^0.5.7",
     "tailwindcss": "^3.3.5",
-    "typescript": "~5.5.4"
+    "typescript": "~5.9.2"
   }
 }

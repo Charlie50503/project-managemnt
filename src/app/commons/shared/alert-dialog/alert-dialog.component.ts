@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, Inject, Output, EventEmitter } from '@angular/core';
 import {
   MatDialogRef,
@@ -17,7 +17,7 @@ export interface DialogData {
     selector: 'app-alert-dialog',
     templateUrl: './alert-dialog.component.html',
     styleUrls: ['./alert-dialog.component.scss'],
-    imports: [MatIconModule, MatDialogModule, CommonModule, MatButtonModule]
+    imports: [MatIconModule, MatDialogModule, MatButtonModule]
 })
 export class AlertDialogComponent implements OnInit {
   @Output() submitClicked = new EventEmitter<any>();
