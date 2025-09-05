@@ -18,18 +18,17 @@ import { LoginService } from 'src/app/api/v1/services';
 import { AlertDialogComponent } from 'src/app/commons/shared/alert-dialog/alert-dialog.component';
 import { UserInfo } from 'src/app/api/v1/models';
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss'],
-  standalone: true,
-  imports: [
-    MatFormFieldModule,
-    MatInputModule,
-    MatIconModule,
-    ReactiveFormsModule,
-    MatButtonModule,
-    CommonModule,
-  ],
+    selector: 'app-login',
+    templateUrl: './login.component.html',
+    styleUrls: ['./login.component.scss'],
+    imports: [
+        MatFormFieldModule,
+        MatInputModule,
+        MatIconModule,
+        ReactiveFormsModule,
+        MatButtonModule,
+        CommonModule,
+    ]
 })
 export class LoginComponent {
   // 設置密碼是否可以看的到

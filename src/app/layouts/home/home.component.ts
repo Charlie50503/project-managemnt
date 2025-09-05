@@ -21,20 +21,19 @@ interface pageInterface {
 }
 
 @Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.scss',
-  standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    MatIconModule,
-    MatToolbarModule,
-    MatSidenavModule,
-    MatButtonModule,
-    MatExpansionModule,
-    MatListModule,
-  ],
+    selector: 'app-home',
+    templateUrl: './home.component.html',
+    styleUrl: './home.component.scss',
+    imports: [
+        CommonModule,
+        RouterModule,
+        MatIconModule,
+        MatToolbarModule,
+        MatSidenavModule,
+        MatButtonModule,
+        MatExpansionModule,
+        MatListModule,
+    ]
 })
 export class HomeComponent implements AfterViewInit {
   @ViewChild('drawer') sidenav!: MatSidenav;

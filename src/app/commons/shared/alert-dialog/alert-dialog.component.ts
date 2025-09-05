@@ -14,11 +14,10 @@ export interface DialogData {
   alertContent: string;
 }
 @Component({
-  selector: 'app-alert-dialog',
-  templateUrl: './alert-dialog.component.html',
-  styleUrls: ['./alert-dialog.component.scss'],
-  standalone: true,
-  imports: [MatIconModule, MatDialogModule, CommonModule, MatButtonModule],
+    selector: 'app-alert-dialog',
+    templateUrl: './alert-dialog.component.html',
+    styleUrls: ['./alert-dialog.component.scss'],
+    imports: [MatIconModule, MatDialogModule, CommonModule, MatButtonModule]
 })
 export class AlertDialogComponent implements OnInit {
   @Output() submitClicked = new EventEmitter<any>();
