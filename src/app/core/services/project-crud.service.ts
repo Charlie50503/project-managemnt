@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, map, tap } from 'rxjs';
+import { BehaviorSubject, Observable, map, tap, of, delay } from 'rxjs';
 import { Project, Task, ProjectData } from '../../shared/models/project.model';
 import { Member } from '../../shared/models/member.model';
 
@@ -20,8 +20,24 @@ export class ProjectCrudService {
   }
 
   private loadData(): void {
+    // 先嘗試從 localStorage 載入資料
+    const savedData = localStorage.getItem('projectData');
+    if (savedData) {
+      try {
+        const data = JSON.parse(savedData);
+        this.dataSubject.next(data);
+        return;
+      } catch (error) {
+        console.error('Error parsing saved data:', error);
+      }
+    }
+    
+    // 如果沒有儲存的資料，則從 JSON 檔案載入
     this.http.get<ProjectData>('/assets/data/project-data.json')
-      .subscribe(data => this.dataSubject.next(data));
+      .subscribe(data => {
+        this.dataSubject.next(data);
+        this.saveData(data);
+      });
   }
 
   private loadMembers(): void {
@@ -128,20 +144,27 @@ export class ProjectCrudService {
   }
 
   deleteTask(id: number): Observable<boolean> {
-    return this.data$.pipe(
-      map(data => {
-        if (!data) throw new Error('Data not loaded');
-        
-        const index = data.memberTableData.findIndex(t => t.id === id);
-        if (index === -1) return false;
-        
-        data.memberTableData.splice(index, 1);
-        this.dataSubject.next(data);
-        this.saveData(data);
-        
-        return true;
-      })
-    );
+    const currentData = this.dataSubject.value;
+    
+    if (!currentData) {
+      return of(false);
+    }
+    
+    // 從 memberTableData 中找到並移除任務
+    const taskIndex = currentData.memberTableData.findIndex(task => task.id === id);
+    
+    if (taskIndex !== -1) {
+      // 移除任務
+      currentData.memberTableData.splice(taskIndex, 1);
+      
+      // 更新資料
+      this.dataSubject.next(currentData);
+      this.saveData(currentData);
+      
+      return of(true).pipe(delay(300)); // 模擬 API 延遲
+    }
+    
+    return of(false);
   }
 
   // 取得特定案件的工作項
@@ -168,15 +191,19 @@ export class ProjectCrudService {
     );
   }
 
-  // 儲存資料到本地 (模擬)
+  // 儲存資料到本地
   private saveData(data: ProjectData): void {
-    // 在實際應用中，這裡會呼叫 API 儲存到後端
-    // 目前只是更新記憶體中的資料
-    console.log('Data saved:', data);
+    try {
+      localStorage.setItem('projectData', JSON.stringify(data));
+      console.log('Data saved to localStorage:', data);
+    } catch (error) {
+      console.error('Error saving data to localStorage:', error);
+    }
   }
 
   // 重新載入資料
   refreshData(): void {
-    this.loadData();
+    // 不需要重新載入，資料已經在 BehaviorSubject 中保持同步
+    // 如果需要強制重新載入，可以調用 this.loadData();
   }
 }

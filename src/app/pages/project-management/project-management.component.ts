@@ -21,6 +21,7 @@ import { ProjectFormDialogComponent } from './components/project-form-dialog/pro
 import { TaskFormDialogComponent } from './components/task-form-dialog/task-form-dialog.component';
 import { SystemFormDialogComponent } from './components/system-form-dialog/system-form-dialog.component';
 import { SystemCrudService } from './services/system-crud.service';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-project-management',
@@ -153,7 +154,7 @@ export class ProjectManagementComponent implements OnInit {
         this.projectCrudService.createProject(result).subscribe({
           next: (project) => {
             this.snackBar.open('案件新增成功', '關閉', { duration: 3000 });
-            this.refreshData();
+            // 資料已由 CRUD 服務更新，無需額外刷新
           },
           error: (error) => {
             this.snackBar.open('案件新增失敗', '關閉', { duration: 3000 });
@@ -175,7 +176,7 @@ export class ProjectManagementComponent implements OnInit {
         this.projectCrudService.updateProject(project.id, result).subscribe({
           next: (updatedProject) => {
             this.snackBar.open('案件更新成功', '關閉', { duration: 3000 });
-            this.refreshData();
+            // 資料已由 CRUD 服務更新，無需額外刷新
           },
           error: (error) => {
             this.snackBar.open('案件更新失敗', '關閉', { duration: 3000 });
@@ -198,7 +199,7 @@ export class ProjectManagementComponent implements OnInit {
         this.projectCrudService.createTask(result).subscribe({
           next: (task) => {
             this.snackBar.open('工作項新增成功', '關閉', { duration: 3000 });
-            this.refreshData();
+            // 資料已由 CRUD 服務更新，無需額外刷新
           },
           error: (error) => {
             this.snackBar.open('工作項新增失敗', '關閉', { duration: 3000 });
@@ -220,7 +221,7 @@ export class ProjectManagementComponent implements OnInit {
         this.projectCrudService.updateTask(task.id, result).subscribe({
           next: (updatedTask) => {
             this.snackBar.open('工作項更新成功', '關閉', { duration: 3000 });
-            this.refreshData();
+            // 資料已由 CRUD 服務更新，無需額外刷新
           },
           error: (error) => {
             this.snackBar.open('工作項更新失敗', '關閉', { duration: 3000 });
@@ -243,7 +244,7 @@ export class ProjectManagementComponent implements OnInit {
         this.systemCrudService.createSystem(result).subscribe({
           next: (newSystem) => {
             this.snackBar.open('系統新增成功', '關閉', { duration: 3000 });
-            this.refreshData();
+            // 資料已由 CRUD 服務更新，無需額外刷新
           },
           error: (error) => {
             this.snackBar.open('系統新增失敗', '關閉', { duration: 3000 });
@@ -265,7 +266,7 @@ export class ProjectManagementComponent implements OnInit {
         this.systemCrudService.updateSystem(system.id, result).subscribe({
           next: (updatedSystem) => {
             this.snackBar.open('系統更新成功', '關閉', { duration: 3000 });
-            this.refreshData();
+            // 資料已由 CRUD 服務更新，無需額外刷新
           },
           error: (error) => {
             this.snackBar.open('系統更新失敗', '關閉', { duration: 3000 });
@@ -278,23 +279,23 @@ export class ProjectManagementComponent implements OnInit {
 
   // 刪除任務操作
   openDeleteTaskDialog(task: Task): void {
-    const dialogRef = this.dialog.open(TaskFormDialogComponent, {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
-        task,
-        isEdit: false,
-        isDelete: true,
-        title: '確認刪除',
-        message: `確定要刪除任務「${task.task}」嗎？此操作無法復原。`
+        title: '確認刪除任務',
+        message: `確定要刪除任務「${task.task}」嗎？此操作無法復原。`,
+        confirmText: '刪除',
+        cancelText: '取消',
+        type: 'danger'
       }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result === 'confirm') {
+      if (result) {
         this.projectCrudService.deleteTask(task.id).subscribe({
           next: () => {
             this.snackBar.open('任務刪除成功', '關閉', { duration: 3000 });
-            this.refreshData();
+            // 資料已由 CRUD 服務更新，無需額外刷新
           },
           error: (error) => {
             this.snackBar.open('任務刪除失敗', '關閉', { duration: 3000 });

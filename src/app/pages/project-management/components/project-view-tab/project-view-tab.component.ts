@@ -45,7 +45,7 @@ export class ProjectViewTabComponent {
   displayedColumnsWithExpand: string[] = [...this.displayedColumns, 'expand'];
   expandedElement: GroupedProjectData | null = null;
 
-  constructor(public statusHelper: StatusHelperService) {}
+  constructor(public statusHelper: StatusHelperService) { }
 
   ngOnInit(): void {
     this.filteredData$ = this.groupedProjectData$.pipe(
@@ -67,20 +67,20 @@ export class ProjectViewTabComponent {
       if (this.hideCompleted && project.status === 'completed') {
         return false;
       }
-      
+
       const matchesSearch = project.project.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           project.system.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           project.membersList.some(member => 
-                             member.member.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                             member.tasks.some(task => task.task.toLowerCase().includes(this.searchTerm.toLowerCase()))
-                           );
-      
-      const matchesStatus = this.statusFilter === 'all' || 
-                           project.status === this.statusFilter ||
-                           project.membersList.some(member => 
-                             member.tasks.some(task => task.status === this.statusFilter)
-                           );
-      
+        project.system.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        project.membersList.some(member =>
+          member.member.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+          member.tasks.some(task => task.task.toLowerCase().includes(this.searchTerm.toLowerCase()))
+        );
+
+      const matchesStatus = this.statusFilter === 'all' ||
+        project.status === this.statusFilter ||
+        project.membersList.some(member =>
+          member.tasks.some(task => task.status === this.statusFilter)
+        );
+
       return matchesSearch && matchesStatus;
     });
   }

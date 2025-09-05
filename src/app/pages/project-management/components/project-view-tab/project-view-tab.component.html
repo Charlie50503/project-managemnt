@@ -159,13 +159,13 @@
                         <!-- 操作按鈕 -->
                         <div class="flex justify-end gap-1">
                           <button mat-icon-button 
-                                  (click)="onEditTask(task); $event.stopPropagation()" 
+                                  (click)="onEditTask(task)" 
                                   class="text-blue-600 hover:bg-blue-50"
                                   matTooltip="編輯項目">
                             <mat-icon class="text-xs">edit</mat-icon>
                           </button>
                           <button mat-icon-button 
-                                  (click)="onDeleteTask(task); $event.stopPropagation()" 
+                                  (click)="onDeleteTask(task)" 
                                   class="text-red-600 hover:bg-red-50"
                                   matTooltip="刪除項目">
                             <mat-icon class="text-xs">delete</mat-icon>
