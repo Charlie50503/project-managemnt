@@ -19,7 +19,7 @@ export interface System {
 export class SystemCrudService {
   private systemsSubject = new BehaviorSubject<System[]>([]);
   public systems$ = this.systemsSubject.asObservable();
-  private readonly ASSETS_PATH = 'assets/data/systems.json';
+  private readonly API_BASE_URL = 'http://localhost:3000/api';
   private autoExportEnabled = false; // 控制是否自動匯出
 
   constructor(private http: HttpClient) {
@@ -38,62 +38,63 @@ export class SystemCrudService {
 
   // 根據 ID 獲取系統
   getSystemById(id: string): Observable<System | undefined> {
-    return this.systems$.pipe(
-      map(systems => systems.find(system => system.id === id))
+    return this.http.get<System>(`${this.API_BASE_URL}/systems/${id}`).pipe(
+      catchError(() => of(undefined))
     );
   }
 
   // 新增系統
   createSystem(systemData: Omit<System, 'id'>): Observable<System> {
-    const newSystem: System = {
-      ...systemData,
-      id: this.generateId()
-    };
-
-    const currentSystems = this.systemsSubject.value;
-    const updatedSystems = [...currentSystems, newSystem];
-    this.systemsSubject.next(updatedSystems);
-    
-    // 自動匯出（如果啟用）
-    if (this.autoExportEnabled) {
-      setTimeout(() => this.exportToFile(), 100);
-    }
-
-    return of(newSystem).pipe(delay(500)); // 模擬 API 延遲
+    return this.http.post<System>(`${this.API_BASE_URL}/systems`, systemData).pipe(
+      map(newSystem => {
+        const currentSystems = this.systemsSubject.value;
+        const updatedSystems = [...currentSystems, newSystem];
+        this.systemsSubject.next(updatedSystems);
+        return newSystem;
+      }),
+      catchError(error => {
+        console.error('Error creating system:', error);
+        throw error;
+      })
+    );
   }
 
   // 更新系統
   updateSystem(id: string, systemData: Partial<System>): Observable<System> {
-    const currentSystems = this.systemsSubject.value;
-    const systemIndex = currentSystems.findIndex(system => system.id === id);
-
-    if (systemIndex === -1) {
-      throw new Error('System not found');
-    }
-
-    const updatedSystem = {
-      ...currentSystems[systemIndex],
-      ...systemData,
-      id, // 確保 ID 不被覆蓋
-      updatedAt: new Date().toISOString()
-    };
-
-    const updatedSystems = [...currentSystems];
-    updatedSystems[systemIndex] = updatedSystem;
-
-    this.systemsSubject.next(updatedSystems);
-
-    return of(updatedSystem).pipe(delay(500)); // 模擬 API 延遲
+    return this.http.put<System>(`${this.API_BASE_URL}/systems/${id}`, systemData).pipe(
+      map(updatedSystem => {
+        const currentSystems = this.systemsSubject.value;
+        const systemIndex = currentSystems.findIndex(system => system.id === id);
+        
+        if (systemIndex !== -1) {
+          const updatedSystems = [...currentSystems];
+          updatedSystems[systemIndex] = updatedSystem;
+          this.systemsSubject.next(updatedSystems);
+        }
+        
+        return updatedSystem;
+      }),
+      catchError(error => {
+        console.error('Error updating system:', error);
+        throw error;
+      })
+    );
   }
 
   // 刪除系統
   deleteSystem(id: string): Observable<boolean> {
-    const currentSystems = this.systemsSubject.value;
-    const updatedSystems = currentSystems.filter(system => system.id !== id);
-
-    this.systemsSubject.next(updatedSystems);
-
-    return of(true).pipe(delay(500)); // 模擬 API 延遲
+    return this.http.delete(`${this.API_BASE_URL}/systems/${id}`).pipe(
+      map(() => {
+        const currentSystems = this.systemsSubject.value;
+        const updatedSystems = currentSystems.filter(system => system.id !== id);
+        this.systemsSubject.next(updatedSystems);
+        return true;
+      }),
+      catchError(error => {
+        console.error('Error deleting system:', error);
+        throw error;
+      })
+    );
   }
 
   // 刷新資料
@@ -108,16 +109,14 @@ export class SystemCrudService {
 
   // 載入初始資料
   private loadInitialData(): void {
-    // 直接從 assets 載入
-    console.log('Loading systems from assets/data/systems.json');
-    this.http.get<System[]>(this.ASSETS_PATH).pipe(
-      catchError(() => {
-        // 如果 assets 檔案載入失敗，使用空陣列
-        console.log('No systems.json found, starting with empty array');
+    console.log('Loading systems from API');
+    this.http.get<System[]>(`${this.API_BASE_URL}/systems`).pipe(
+      catchError(error => {
+        console.error('Error loading systems from API:', error);
         return of([]);
       })
     ).subscribe(systems => {
-      console.log('Loaded systems from JSON file:', systems);
+      console.log('Loaded systems from API:', systems);
       this.systemsSubject.next(systems);
     });
   }

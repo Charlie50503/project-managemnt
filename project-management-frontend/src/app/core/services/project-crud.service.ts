@@ -10,6 +10,7 @@ import { Member } from '../../shared/models/member.model';
 export class ProjectCrudService {
   private dataSubject = new BehaviorSubject<ProjectData | null>(null);
   private membersSubject = new BehaviorSubject<Member[]>([]);
+  private readonly API_BASE_URL = 'http://localhost:3000/api';
   
   public data$ = this.dataSubject.asObservable();
   public members$ = this.membersSubject.asObservable();
@@ -20,78 +21,90 @@ export class ProjectCrudService {
   }
 
   private loadData(): void {
-    // 直接從 JSON 檔案載入
-    console.log('Loading project data from assets/data/project-data.json');
-    this.http.get<ProjectData>('assets/data/project-data.json')
-      .subscribe({
-        next: (data) => {
-          console.log('Loaded project data from JSON file:', data);
-          this.dataSubject.next(data);
-        },
-        error: (error) => {
-          console.error('Error loading project data from JSON file:', error);
-          this.dataSubject.next(null);
-        }
-      });
+    console.log('Loading project data from API');
+    
+    // 同時載入專案和任務資料
+    const projects$ = this.http.get<Project[]>(`${this.API_BASE_URL}/projects`);
+    const tasks$ = this.http.get<Task[]>(`${this.API_BASE_URL}/tasks`);
+    
+    // 合併兩個請求的結果
+    projects$.subscribe({
+      next: (projects) => {
+        tasks$.subscribe({
+          next: (tasks) => {
+            const projectData: ProjectData = {
+              projectTableData: projects,
+              memberTableData: tasks
+            };
+            console.log('Loaded project data from API:', projectData);
+            this.dataSubject.next(projectData);
+          },
+          error: (error) => {
+            console.error('Error loading tasks from API:', error);
+            this.dataSubject.next(null);
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error loading projects from API:', error);
+        this.dataSubject.next(null);
+      }
+    });
   }
 
   private loadMembers(): void {
-    this.http.get<Member[]>('assets/data/members.json')
+    this.http.get<Member[]>(`${this.API_BASE_URL}/members`)
       .subscribe(members => this.membersSubject.next(members));
   }
 
   // 案件 CRUD 操作
   createProject(project: Omit<Project, 'id'>): Observable<Project> {
-    return this.data$.pipe(
-      map(data => {
-        if (!data) throw new Error('Data not loaded');
-        
-        const newId = Math.max(...data.projectTableData.map(p => p.id), 0) + 1;
-        const newProject: Project = {
-          ...project,
-          id: newId
-        };
-        
-        data.projectTableData.push(newProject);
-        this.dataSubject.next(data);
-        
+    return this.http.post<Project>(`${this.API_BASE_URL}/projects`, project).pipe(
+      map(newProject => {
+        const currentData = this.dataSubject.value;
+        if (currentData) {
+          currentData.projectTableData.push(newProject);
+          this.dataSubject.next(currentData);
+        }
         return newProject;
       })
     );
   }
 
   updateProject(id: number, updates: Partial<Project>): Observable<Project> {
-    return this.data$.pipe(
-      map(data => {
-        if (!data) throw new Error('Data not loaded');
-        
-        const index = data.projectTableData.findIndex(p => p.id === id);
-        if (index === -1) throw new Error('Project not found');
-        
-        data.projectTableData[index] = { ...data.projectTableData[index], ...updates };
-        this.dataSubject.next(data);
-        
-        return data.projectTableData[index];
+    return this.http.put<Project>(`${this.API_BASE_URL}/projects/${id}`, updates).pipe(
+      map(updatedProject => {
+        const currentData = this.dataSubject.value;
+        if (currentData) {
+          const index = currentData.projectTableData.findIndex(p => p.id === id);
+          if (index !== -1) {
+            currentData.projectTableData[index] = updatedProject;
+            this.dataSubject.next(currentData);
+          }
+        }
+        return updatedProject;
       })
     );
   }
 
   deleteProject(id: number): Observable<boolean> {
-    return this.data$.pipe(
-      map(data => {
-        if (!data) throw new Error('Data not loaded');
-        
-        const index = data.projectTableData.findIndex(p => p.id === id);
-        if (index === -1) return false;
-        
-        // 同時刪除相關的任務
-        data.memberTableData = data.memberTableData.filter(task => 
-          !data.projectTableData[index] || task.project !== data.projectTableData[index].project
-        );
-        
-        data.projectTableData.splice(index, 1);
-        this.dataSubject.next(data);
-        
+    return this.http.delete(`${this.API_BASE_URL}/projects/${id}`).pipe(
+      map(() => {
+        const currentData = this.dataSubject.value;
+        if (currentData) {
+          const projectIndex = currentData.projectTableData.findIndex(p => p.id === id);
+          if (projectIndex !== -1) {
+            const projectName = currentData.projectTableData[projectIndex].project;
+            
+            // 移除專案和相關任務
+            currentData.projectTableData.splice(projectIndex, 1);
+            currentData.memberTableData = currentData.memberTableData.filter(task => 
+              task.project !== projectName
+            );
+            
+            this.dataSubject.next(currentData);
+          }
+        }
         return true;
       })
     );
@@ -99,61 +112,48 @@ export class ProjectCrudService {
 
   // 工作項 CRUD 操作
   createTask(task: Omit<Task, 'id'>): Observable<Task> {
-    return this.data$.pipe(
-      map(data => {
-        if (!data) throw new Error('Data not loaded');
-        
-        const newId = Math.max(...data.memberTableData.map(t => t.id), 0) + 1;
-        const newTask: Task = {
-          ...task,
-          id: newId
-        };
-        
-        data.memberTableData.push(newTask);
-        this.dataSubject.next(data);
-        
+    return this.http.post<Task>(`${this.API_BASE_URL}/tasks`, task).pipe(
+      map(newTask => {
+        const currentData = this.dataSubject.value;
+        if (currentData) {
+          currentData.memberTableData.push(newTask);
+          this.dataSubject.next(currentData);
+        }
         return newTask;
       })
     );
   }
 
   updateTask(id: number, updates: Partial<Task>): Observable<Task> {
-    return this.data$.pipe(
-      map(data => {
-        if (!data) throw new Error('Data not loaded');
-        
-        const index = data.memberTableData.findIndex(t => t.id === id);
-        if (index === -1) throw new Error('Task not found');
-        
-        data.memberTableData[index] = { ...data.memberTableData[index], ...updates };
-        this.dataSubject.next(data);
-        
-        return data.memberTableData[index];
+    return this.http.put<Task>(`${this.API_BASE_URL}/tasks/${id}`, updates).pipe(
+      map(updatedTask => {
+        const currentData = this.dataSubject.value;
+        if (currentData) {
+          const index = currentData.memberTableData.findIndex(t => t.id === id);
+          if (index !== -1) {
+            currentData.memberTableData[index] = updatedTask;
+            this.dataSubject.next(currentData);
+          }
+        }
+        return updatedTask;
       })
     );
   }
 
   deleteTask(id: number): Observable<boolean> {
-    const currentData = this.dataSubject.value;
-    
-    if (!currentData) {
-      return of(false);
-    }
-    
-    // 從 memberTableData 中找到並移除任務
-    const taskIndex = currentData.memberTableData.findIndex(task => task.id === id);
-    
-    if (taskIndex !== -1) {
-      // 移除任務
-      currentData.memberTableData.splice(taskIndex, 1);
-      
-      // 更新資料
-      this.dataSubject.next(currentData);
-      
-      return of(true).pipe(delay(300)); // 模擬 API 延遲
-    }
-    
-    return of(false);
+    return this.http.delete(`${this.API_BASE_URL}/tasks/${id}`).pipe(
+      map(() => {
+        const currentData = this.dataSubject.value;
+        if (currentData) {
+          const taskIndex = currentData.memberTableData.findIndex(task => task.id === id);
+          if (taskIndex !== -1) {
+            currentData.memberTableData.splice(taskIndex, 1);
+            this.dataSubject.next(currentData);
+          }
+        }
+        return true;
+      })
+    );
   }
 
   // 取得特定案件的工作項
