@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, forkJoin, map } from 'rxjs';
+import { Observable, forkJoin, map, take } from 'rxjs';
 import { MemberCrudService } from '../../pages/project-management/services/member-crud.service';
 import { SystemCrudService } from '../../pages/project-management/services/system-crud.service';
 import { ProjectCrudService } from '../../core/services/project-crud.service';
@@ -28,9 +28,9 @@ export class DataExportImportService {
   // 匯出所有資料
   exportAllData(): Observable<ExportData> {
     return forkJoin({
-      members: this.memberCrudService.getMembers(),
-      systems: this.systemCrudService.getSystems(),
-      projectData: this.projectCrudService.data$
+      members: this.memberCrudService.getMembers().pipe(take(1)),
+      systems: this.systemCrudService.getSystems().pipe(take(1)),
+      projectData: this.projectCrudService.data$.pipe(take(1))
     }).pipe(
       map(data => ({
         version: '1.0.0',
