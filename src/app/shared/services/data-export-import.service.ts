@@ -23,7 +23,7 @@ export class DataExportImportService {
     private memberCrudService: MemberCrudService,
     private systemCrudService: SystemCrudService,
     private projectCrudService: ProjectCrudService
-  ) {}
+  ) { }
 
   // 匯出所有資料
   exportAllData(): Observable<ExportData> {
@@ -47,14 +47,14 @@ export class DataExportImportService {
     const jsonString = JSON.stringify(data, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = window.URL.createObjectURL(blob);
-    
+
     const link = document.createElement('a');
     link.href = url;
     link.download = filename || `project-data-export-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     window.URL.revokeObjectURL(url);
   }
 
@@ -62,28 +62,28 @@ export class DataExportImportService {
   importData(file: File): Promise<ExportData> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      
+
       reader.onload = (event) => {
         try {
           const jsonString = event.target?.result as string;
           const data = JSON.parse(jsonString) as ExportData;
-          
+
           // 驗證資料格式
           if (!this.validateImportData(data)) {
             reject(new Error('匯入檔案格式不正確'));
             return;
           }
-          
+
           resolve(data);
         } catch (error) {
           reject(new Error('檔案解析失敗：' + error));
         }
       };
-      
+
       reader.onerror = () => {
         reject(new Error('檔案讀取失敗'));
       };
-      
+
       reader.readAsText(file);
     });
   }
@@ -95,15 +95,15 @@ export class DataExportImportService {
       if (data.members) {
         localStorage.setItem('membersData', JSON.stringify(data.members));
       }
-      
+
       if (data.systems) {
-        localStorage.setItem('systemsData', JSON.stringify(data.systems));
+        localStorage.setItem('project_management_systems', JSON.stringify(data.systems));
       }
-      
+
       if (data.projectData) {
         localStorage.setItem('projectData', JSON.stringify(data.projectData));
       }
-      
+
       // 重新載入頁面以應用新資料
       window.location.reload();
     } catch (error) {
@@ -142,24 +142,24 @@ export class DataExportImportService {
     const csvContent = this.convertToCSV(data, headers);
     const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
-    
+
     const link = document.createElement('a');
     link.href = url;
     link.download = `${filename}-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     window.URL.revokeObjectURL(url);
   }
 
   // 轉換為 CSV 格式
   private convertToCSV(data: any[], headers: string[]): string {
     const csvRows = [];
-    
+
     // 添加標題行
     csvRows.push(headers.join(','));
-    
+
     // 添加資料行
     for (const row of data) {
       const values = headers.map(header => {
@@ -172,7 +172,7 @@ export class DataExportImportService {
       });
       csvRows.push(values.join(','));
     }
-    
+
     return csvRows.join('\n');
   }
 }

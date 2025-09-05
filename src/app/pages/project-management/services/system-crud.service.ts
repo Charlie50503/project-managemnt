@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { delay, map } from 'rxjs/operators';
+import { delay, map, catchError } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
 
 export interface System {
   id: string;
@@ -16,10 +17,14 @@ export interface System {
   providedIn: 'root'
 })
 export class SystemCrudService {
-  private systemsSubject = new BehaviorSubject<System[]>(this.getInitialSystems());
+  private systemsSubject = new BehaviorSubject<System[]>([]);
   public systems$ = this.systemsSubject.asObservable();
+  private readonly ASSETS_PATH = 'assets/data/systems.json';
+  private readonly STORAGE_KEY = 'project_management_systems';
 
-  constructor() {}
+  constructor(private http: HttpClient) {
+    this.loadInitialData();
+  }
 
   // 獲取所有系統
   getSystems(): Observable<System[]> {
@@ -52,7 +57,7 @@ export class SystemCrudService {
   updateSystem(id: string, systemData: Partial<System>): Observable<System> {
     const currentSystems = this.systemsSubject.value;
     const systemIndex = currentSystems.findIndex(system => system.id === id);
-    
+
     if (systemIndex === -1) {
       throw new Error('System not found');
     }
@@ -66,7 +71,7 @@ export class SystemCrudService {
 
     const updatedSystems = [...currentSystems];
     updatedSystems[systemIndex] = updatedSystem;
-    
+
     this.systemsSubject.next(updatedSystems);
     this.saveToLocalStorage(updatedSystems);
 
@@ -77,7 +82,7 @@ export class SystemCrudService {
   deleteSystem(id: string): Observable<boolean> {
     const currentSystems = this.systemsSubject.value;
     const updatedSystems = currentSystems.filter(system => system.id !== id);
-    
+
     this.systemsSubject.next(updatedSystems);
     this.saveToLocalStorage(updatedSystems);
 
@@ -92,64 +97,53 @@ export class SystemCrudService {
 
   // 生成唯一 ID
   private generateId(): string {
-    return 'sys_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    return 'sys_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
   }
 
-  // 獲取初始系統資料
-  private getInitialSystems(): System[] {
+  // 載入初始資料
+  private loadInitialData(): void {
+    // 先嘗試從 localStorage 載入
     const savedSystems = this.loadFromLocalStorage();
     if (savedSystems.length > 0) {
-      return savedSystems;
+      this.systemsSubject.next(savedSystems);
+      return;
     }
 
-    // 預設系統資料
-    const defaultSystems: System[] = [
-      {
-        id: 'sys_001',
-        name: '人事管理系統',
-        code: 'HRM',
-        description: '員工資料、薪資、考勤管理系統',
-        owner: '張三',
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: '2024-01-01T00:00:00.000Z'
-      },
-      {
-        id: 'sys_002',
-        name: '財務管理系統',
-        code: 'FMS',
-        description: '會計、預算、報表管理系統',
-        owner: '李四',
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: '2024-01-01T00:00:00.000Z'
-      },
-      {
-        id: 'sys_003',
-        name: '客戶關係管理系統',
-        code: 'CRM',
-        description: '客戶資料、銷售、服務管理系統',
-        owner: '王五',
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: '2024-01-01T00:00:00.000Z'
-      },
-      {
-        id: 'sys_004',
-        name: '庫存管理系統',
-        code: 'IMS',
-        description: '商品庫存、進出貨管理系統',
-        owner: '趙六',
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: '2024-01-01T00:00:00.000Z'
+    // 如果 localStorage 沒有資料，從 assets 載入
+    this.http.get<System[]>(this.ASSETS_PATH).pipe(
+      catchError(() => {
+        // 如果 assets 檔案載入失敗，使用空陣列
+        console.log('No systems.json found, starting with empty array');
+        return of([]);
+      })
+    ).subscribe(systems => {
+      this.systemsSubject.next(systems);
+      if (systems.length > 0) {
+        this.saveToLocalStorage(systems);
       }
-    ];
+    });
+  }
 
-    this.saveToLocalStorage(defaultSystems);
-    return defaultSystems;
+  // 匯出資料到檔案 (供開發者手動更新 assets)
+  exportToFile(): void {
+    const systems = this.systemsSubject.value;
+    const dataStr = JSON.stringify(systems, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'systems.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 
   // 儲存到 localStorage
   private saveToLocalStorage(systems: System[]): void {
     try {
-      localStorage.setItem('project_management_systems', JSON.stringify(systems));
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(systems));
     } catch (error) {
       console.error('Error saving systems to localStorage:', error);
     }
@@ -158,7 +152,7 @@ export class SystemCrudService {
   // 從 localStorage 載入
   private loadFromLocalStorage(): System[] {
     try {
-      const saved = localStorage.getItem('project_management_systems');
+      const saved = localStorage.getItem(this.STORAGE_KEY);
       return saved ? JSON.parse(saved) : [];
     } catch (error) {
       console.error('Error loading systems from localStorage:', error);

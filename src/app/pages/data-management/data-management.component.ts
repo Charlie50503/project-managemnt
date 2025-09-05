@@ -292,6 +292,22 @@ export class DataManagementComponent implements OnInit {
     });
   }
 
+  // 匯出個別資料檔案 (供開發者更新 assets)
+  exportMembersFile(): void {
+    this.memberCrudService.exportToFile();
+    this.snackBar.open('人員資料已匯出，請將檔案放到 src/assets/data/ 目錄', '關閉', { duration: 5000 });
+  }
+
+  exportSystemsFile(): void {
+    this.systemCrudService.exportToFile();
+    this.snackBar.open('系統資料已匯出，請將檔案放到 src/assets/data/ 目錄', '關閉', { duration: 5000 });
+  }
+
+  exportProjectsFile(): void {
+    this.projectCrudService.exportToFile();
+    this.snackBar.open('案件資料已匯出，請將檔案放到 src/assets/data/ 目錄', '關閉', { duration: 5000 });
+  }
+
   private refreshData(): void {
     // 資料已由各自的 CRUD 服務自動更新，無需手動刷新
     // this.memberCrudService, this.systemCrudService, this.projectCrudService 都使用 BehaviorSubject

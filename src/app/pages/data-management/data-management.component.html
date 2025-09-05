@@ -28,14 +28,24 @@
           <!-- 操作按鈕 -->
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-semibold text-gray-800">人員列表</h2>
-            <button 
-              mat-raised-button 
-              color="primary"
-              (click)="openCreateMemberDialog()"
-              class="flex items-center gap-2">
-              <mat-icon>add</mat-icon>
-              新增人員
-            </button>
+            <div class="flex gap-2">
+              <button 
+                mat-stroked-button 
+                color="accent"
+                (click)="exportMembersFile()"
+                class="flex items-center gap-2">
+                <mat-icon>download</mat-icon>
+                匯出檔案
+              </button>
+              <button 
+                mat-raised-button 
+                color="primary"
+                (click)="openCreateMemberDialog()"
+                class="flex items-center gap-2">
+                <mat-icon>add</mat-icon>
+                新增人員
+              </button>
+            </div>
           </div>
 
           <!-- 人員表格 -->
@@ -129,14 +139,24 @@
           <!-- 操作按鈕 -->
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-semibold text-gray-800">系統列表</h2>
-            <button 
-              mat-raised-button 
-              color="primary"
-              (click)="openCreateSystemDialog()"
-              class="flex items-center gap-2">
-              <mat-icon>add</mat-icon>
-              新增系統
-            </button>
+            <div class="flex gap-2">
+              <button 
+                mat-stroked-button 
+                color="accent"
+                (click)="exportSystemsFile()"
+                class="flex items-center gap-2">
+                <mat-icon>download</mat-icon>
+                匯出檔案
+              </button>
+              <button 
+                mat-raised-button 
+                color="primary"
+                (click)="openCreateSystemDialog()"
+                class="flex items-center gap-2">
+                <mat-icon>add</mat-icon>
+                新增系統
+              </button>
+            </div>
           </div>
 
           <!-- 系統表格 -->
@@ -216,14 +236,24 @@
           <!-- 操作按鈕 -->
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-semibold text-gray-800">案件列表</h2>
-            <button 
-              mat-raised-button 
-              color="primary"
-              (click)="openCreateProjectDialog()"
-              class="flex items-center gap-2">
-              <mat-icon>add</mat-icon>
-              新增案件
-            </button>
+            <div class="flex gap-2">
+              <button 
+                mat-stroked-button 
+                color="accent"
+                (click)="exportProjectsFile()"
+                class="flex items-center gap-2">
+                <mat-icon>download</mat-icon>
+                匯出檔案
+              </button>
+              <button 
+                mat-raised-button 
+                color="primary"
+                (click)="openCreateProjectDialog()"
+                class="flex items-center gap-2">
+                <mat-icon>add</mat-icon>
+                新增案件
+              </button>
+            </div>
           </div>
 
           <!-- 案件表格 -->

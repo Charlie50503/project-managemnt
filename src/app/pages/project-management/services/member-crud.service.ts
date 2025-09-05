@@ -96,4 +96,20 @@ export class MemberCrudService {
       console.error('Error saving members data to localStorage:', error);
     }
   }
+
+  // 匯出資料到檔案 (供開發者手動更新 assets)
+  exportToFile(): void {
+    const members = this.membersSubject.value;
+    const dataStr = JSON.stringify(members, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'members.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
 }
