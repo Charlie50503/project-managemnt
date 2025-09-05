@@ -3,9 +3,9 @@ const router = express.Router();
 const db = require('../database/db');
 
 // GET /api/members - 取得所有人員
-router.get('/', async (req, res) => {
+router.get('/', (req, res) => {
   try {
-    const members = await db.all('SELECT * FROM members ORDER BY created_at DESC');
+    const members = db.all('SELECT * FROM members ORDER BY created_at DESC');
     
     // 轉換資料格式以符合前端期望
     const formattedMembers = members.map(member => ({
@@ -27,9 +27,9 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/members/:id - 取得特定人員
-router.get('/:id', async (req, res) => {
+router.get('/:id', (req, res) => {
   try {
-    const member = await db.get('SELECT * FROM members WHERE id = ?', [req.params.id]);
+    const member = db.get('SELECT * FROM members WHERE id = ?', [req.params.id]);
     
     if (!member) {
       return res.status(404).json({ error: 'Member not found' });
@@ -54,7 +54,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/members - 新增人員
-router.post('/', async (req, res) => {
+router.post('/', (req, res) => {
   try {
     const { name, employeeId, email, department, departmentCode, section, sectionCode } = req.body;
     
@@ -65,7 +65,7 @@ router.post('/', async (req, res) => {
       });
     }
     
-    const result = await db.run(
+    const result = db.run(
       `INSERT INTO members (name, employee_id, email, department, department_code, section, section_code) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [name, employeeId, email, department, departmentCode, section, sectionCode]
@@ -100,20 +100,20 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/members/:id - 更新人員
-router.put('/:id', async (req, res) => {
+router.put('/:id', (req, res) => {
   try {
     const { name, employeeId, email, department, departmentCode, section, sectionCode } = req.body;
     const memberId = req.params.id;
     
     // 檢查人員是否存在
-    const existingMember = await db.get('SELECT * FROM members WHERE id = ?', [memberId]);
+    const existingMember = db.get('SELECT * FROM members WHERE id = ?', [memberId]);
     if (!existingMember) {
       return res.status(404).json({ error: 'Member not found' });
     }
     
     const updatedAt = new Date().toISOString();
     
-    await db.run(
+    db.run(
       `UPDATE members SET 
        name = ?, employee_id = ?, email = ?, department = ?, 
        department_code = ?, section = ?, section_code = ?, updated_at = ? 
@@ -131,7 +131,7 @@ router.put('/:id', async (req, res) => {
       ]
     );
     
-    const updatedMember = await db.get('SELECT * FROM members WHERE id = ?', [memberId]);
+    const updatedMember = db.get('SELECT * FROM members WHERE id = ?', [memberId]);
     
     const formattedMember = {
       id: updatedMember.id,
@@ -162,11 +162,11 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/members/:id - 刪除人員
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', (req, res) => {
   try {
     const memberId = req.params.id;
     
-    const result = await db.run('DELETE FROM members WHERE id = ?', [memberId]);
+    const result = db.run('DELETE FROM members WHERE id = ?', [memberId]);
     
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Member not found' });

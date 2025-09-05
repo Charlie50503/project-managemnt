@@ -3,9 +3,9 @@ const router = express.Router();
 const db = require('../database/db');
 
 // GET /api/tasks - 取得所有任務
-router.get('/', async (req, res) => {
+router.get('/', (req, res) => {
   try {
-    const tasks = await db.all('SELECT * FROM tasks ORDER BY created_at DESC');
+    const tasks = db.all('SELECT * FROM tasks ORDER BY created_at DESC');
     
     // 轉換資料格式以符合前端期望
     const formattedTasks = tasks.map(task => ({
@@ -30,9 +30,9 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/tasks/:id - 取得特定任務
-router.get('/:id', async (req, res) => {
+router.get('/:id', (req, res) => {
   try {
-    const task = await db.get('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
+    const task = db.get('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
     
     if (!task) {
       return res.status(404).json({ error: 'Task not found' });
@@ -60,10 +60,10 @@ router.get('/:id', async (req, res) => {
 });
 
 // GET /api/tasks/project/:projectName - 取得特定專案的任務
-router.get('/project/:projectName', async (req, res) => {
+router.get('/project/:projectName', (req, res) => {
   try {
     const projectName = decodeURIComponent(req.params.projectName);
-    const tasks = await db.all('SELECT * FROM tasks WHERE project = ? ORDER BY created_at DESC', [projectName]);
+    const tasks = db.all('SELECT * FROM tasks WHERE project = ? ORDER BY created_at DESC', [projectName]);
     
     const formattedTasks = tasks.map(task => ({
       id: task.id,
@@ -87,7 +87,7 @@ router.get('/project/:projectName', async (req, res) => {
 });
 
 // POST /api/tasks - 新增任務
-router.post('/', async (req, res) => {
+router.post('/', (req, res) => {
   try {
     const { 
       member, project, system, task, complexity, priority, 
@@ -118,7 +118,7 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Invalid status. Must be one of: not-started, in-progress, completed' });
     }
     
-    const result = await db.run(
+    const result = db.run(
       `INSERT INTO tasks (
         member, project, system, task, complexity, priority, status,
         start_date, end_date, actual_end_date
@@ -151,13 +151,13 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/tasks/:id - 更新任務
-router.put('/:id', async (req, res) => {
+router.put('/:id', (req, res) => {
   try {
     const taskId = req.params.id;
     const updates = req.body;
     
     // 檢查任務是否存在
-    const existingTask = await db.get('SELECT * FROM tasks WHERE id = ?', [taskId]);
+    const existingTask = db.get('SELECT * FROM tasks WHERE id = ?', [taskId]);
     if (!existingTask) {
       return res.status(404).json({ error: 'Task not found' });
     }
@@ -181,7 +181,7 @@ router.put('/:id', async (req, res) => {
     
     const updatedAt = new Date().toISOString();
     
-    await db.run(
+    db.run(
       `UPDATE tasks SET 
        member = ?, project = ?, system = ?, task = ?, complexity = ?,
        priority = ?, status = ?, start_date = ?, end_date = ?, 
@@ -203,7 +203,7 @@ router.put('/:id', async (req, res) => {
       ]
     );
     
-    const updatedTask = await db.get('SELECT * FROM tasks WHERE id = ?', [taskId]);
+    const updatedTask = db.get('SELECT * FROM tasks WHERE id = ?', [taskId]);
     
     const formattedTask = {
       id: updatedTask.id,
@@ -227,11 +227,11 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/tasks/:id - 刪除任務
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', (req, res) => {
   try {
     const taskId = req.params.id;
     
-    const result = await db.run('DELETE FROM tasks WHERE id = ?', [taskId]);
+    const result = db.run('DELETE FROM tasks WHERE id = ?', [taskId]);
     
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Task not found' });

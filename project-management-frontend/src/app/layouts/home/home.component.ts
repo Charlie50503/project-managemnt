@@ -24,21 +24,21 @@ interface pageInterface {
 }
 
 @Component({
-    selector: 'app-home',
-    templateUrl: './home.component.html',
-    styleUrl: './home.component.scss',
-    imports: [
-        CommonModule,
-        RouterModule,
-        MatIconModule,
-        MatToolbarModule,
-        MatSidenavModule,
-        MatButtonModule,
-        MatExpansionModule,
-        MatListModule,
-        MatDialogModule,
-        MatTooltipModule,
-    ]
+  selector: 'app-home',
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.scss',
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatIconModule,
+    MatToolbarModule,
+    MatSidenavModule,
+    MatButtonModule,
+    MatExpansionModule,
+    MatListModule,
+    MatDialogModule,
+    MatTooltipModule,
+  ]
 })
 export class HomeComponent implements AfterViewInit {
   @ViewChild('drawer') sidenav!: MatSidenav;
@@ -61,28 +61,7 @@ export class HomeComponent implements AfterViewInit {
       type: 'link',
       children: [],
     },
-    {
-      pageName: '一般系統',
-      isShow: true,
-      route: '/main/SystemManagement/List',
-      type: 'link',
-      children: [],
-    },
-    {
-      pageName: '表單系統',
-      isShow: true,
-      route: '/FormSystem',
-      type: 'menu',
-      children: [
-        {
-          pageName: '博格',
-          isShow: true,
-          route: '/main/FormSystem/2/Detail',
-          type: 'link',
-          children: [],
-        },
-      ],
-    },
+
   ];
 
   constructor(
@@ -91,7 +70,7 @@ export class HomeComponent implements AfterViewInit {
     public router: Router,
     private observer: BreakpointObserver,
     private dialog: MatDialog,
-  ) {}
+  ) { }
 
   public onLogout() {
     this.tokenService.removeAllAccessToken();

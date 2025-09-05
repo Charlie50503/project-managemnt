@@ -1,23 +1,22 @@
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const path = require('path');
 
 const dbPath = path.join(__dirname, 'project_management.db');
 
-class Database {
+class DatabaseWrapper {
   constructor() {
-    this.db = new sqlite3.Database(dbPath, (err) => {
-      if (err) {
-        console.error('Error opening database:', err.message);
-      } else {
-        console.log('Connected to SQLite database');
-        this.initTables();
-      }
-    });
+    try {
+      this.db = new Database(dbPath);
+      console.log('Connected to SQLite database');
+      this.initTables();
+    } catch (err) {
+      console.error('Error opening database:', err.message);
+    }
   }
 
   initTables() {
     // 建立 systems 表
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS systems (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
@@ -30,7 +29,7 @@ class Database {
     `);
 
     // 建立 members 表
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS members (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -46,7 +45,7 @@ class Database {
     `);
 
     // 建立 projects 表
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS projects (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         project_number TEXT,
@@ -69,7 +68,7 @@ class Database {
     `);
 
     // 建立 tasks 表
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS tasks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         member TEXT NOT NULL,
@@ -92,53 +91,41 @@ class Database {
 
   // 通用查詢方法
   get(sql, params = []) {
-    return new Promise((resolve, reject) => {
-      this.db.get(sql, params, (err, row) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(row);
-        }
-      });
-    });
+    try {
+      const stmt = this.db.prepare(sql);
+      return stmt.get(params);
+    } catch (err) {
+      throw err;
+    }
   }
 
   all(sql, params = []) {
-    return new Promise((resolve, reject) => {
-      this.db.all(sql, params, (err, rows) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(rows);
-        }
-      });
-    });
+    try {
+      const stmt = this.db.prepare(sql);
+      return stmt.all(params);
+    } catch (err) {
+      throw err;
+    }
   }
 
   run(sql, params = []) {
-    return new Promise((resolve, reject) => {
-      this.db.run(sql, params, function(err) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({ id: this.lastID, changes: this.changes });
-        }
-      });
-    });
+    try {
+      const stmt = this.db.prepare(sql);
+      const result = stmt.run(params);
+      return { id: result.lastInsertRowid, changes: result.changes };
+    } catch (err) {
+      throw err;
+    }
   }
 
   close() {
-    return new Promise((resolve, reject) => {
-      this.db.close((err) => {
-        if (err) {
-          reject(err);
-        } else {
-          console.log('Database connection closed');
-          resolve();
-        }
-      });
-    });
+    try {
+      this.db.close();
+      console.log('Database connection closed');
+    } catch (err) {
+      throw err;
+    }
   }
 }
 
-module.exports = new Database();
+module.exports = new DatabaseWrapper();
