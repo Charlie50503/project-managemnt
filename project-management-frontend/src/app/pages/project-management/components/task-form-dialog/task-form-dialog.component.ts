@@ -100,8 +100,8 @@ export class TaskFormDialogComponent implements OnInit {
       complexity: ['中', Validators.required],
       priority: ['中', Validators.required],
       status: ['not-started', Validators.required],
-      startDate: ['', ],
-      endDate: ['', ],
+      startDate: [''],
+      endDate: [''],
       actualEndDate: ['']
     }, { validators: this.dateValidator });
   }

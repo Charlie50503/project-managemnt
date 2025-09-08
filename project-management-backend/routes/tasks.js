@@ -97,10 +97,10 @@ router.post('/', (req, res) => {
     } = req.body;
     
     // 驗證必要欄位
-    if (!member || !project || !system || !task || !complexity || !priority || !startDate || !endDate) {
-      console.log('Missing required fields:', { member, project, system, task, complexity, priority, startDate, endDate });
+    if (!member || !project || !system || !task || !complexity || !priority) {
+      console.log('Missing required fields:', { member, project, system, task, complexity, priority });
       return res.status(400).json({ 
-        error: 'Required fields: member, project, system, task, complexity, priority, startDate, endDate' 
+        error: 'Required fields: member, project, system, task, complexity, priority' 
       });
     }
     
