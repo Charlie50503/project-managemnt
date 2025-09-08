@@ -80,67 +80,13 @@ export class ProjectViewTabComponent {
   }
 
   private filterData(data: GroupedProjectData[]): GroupedProjectData[] {
-    return data.map(project => {
-      // 過濾已完成項目
+    return data.filter(project => {
+      // 只保留 hideCompleted 的篩選邏輯，其他篩選已在主組件處理
       if (this.hideCompleted && project.status === 'completed') {
-        return null;
+        return false;
       }
-
-      // 1. 專案搜尋
-      const matchesProjectSearch = !this.projectSearchTerm ||
-        project.project.toLowerCase().includes(this.projectSearchTerm.toLowerCase());
-
-      if (!matchesProjectSearch) {
-        return null;
-      }
-
-      // 2. 專案狀態篩選
-      if (this.projectStatusFilters && this.projectStatusFilters.length > 0 && !this.projectStatusFilters.includes(project.status)) {
-        return null;
-      }
-
-      // 3. 過濾成員列表
-      const filteredMembersList = project.membersList.map(member => {
-        // 成員篩選
-        if (this.selectedMembers && this.selectedMembers.length > 0 && !this.selectedMembers.includes(member.member)) {
-          return null;
-        }
-
-        // 過濾工作項
-        let filteredTasks = member.tasks;
-
-        // 工作項搜尋
-        if (this.taskSearchTerm) {
-          filteredTasks = filteredTasks.filter(task => 
-            task.task.toLowerCase().includes(this.taskSearchTerm.toLowerCase())
-          );
-        }
-
-        // 工作項狀態篩選
-        if (this.statusFilters && this.statusFilters.length > 0) {
-          filteredTasks = filteredTasks.filter(task => this.statusFilters.includes(task.status));
-        }
-
-        if (filteredTasks.length === 0) {
-          return null;
-        }
-
-        return {
-          ...member,
-          tasks: filteredTasks
-        };
-      }).filter(member => member !== null);
-
-      // 如果沒有符合條件的成員，則不顯示該專案
-      if (filteredMembersList.length === 0) {
-        return null;
-      }
-
-      return {
-        ...project,
-        membersList: filteredMembersList
-      };
-    }).filter(project => project !== null) as GroupedProjectData[];
+      return true;
+    });
   }
 
   private sortData(data: GroupedProjectData[]): GroupedProjectData[] {

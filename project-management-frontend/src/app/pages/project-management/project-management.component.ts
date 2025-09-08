@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Observable } from 'rxjs';
+import { Observable, combineLatest, map } from 'rxjs';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -75,8 +75,19 @@ export class ProjectManagementComponent implements OnInit {
     private systemCrudService: SystemCrudService,
     private excelExportService: ExcelExportService
   ) {
-    this.groupedMemberData$ = this.projectDataService.getGroupedMemberData();
-    this.groupedProjectData$ = this.projectDataService.getGroupedProjectData();
+    // 獲取原始數據
+    const rawMemberData$ = this.projectDataService.getGroupedMemberData();
+    const rawProjectData$ = this.projectDataService.getGroupedProjectData();
+    
+    // 組合數據並應用篩選
+    this.groupedMemberData$ = combineLatest([rawMemberData$, rawProjectData$]).pipe(
+      map(([memberData, projectData]) => this.filterMemberDataWithProjectStatus(memberData, projectData))
+    );
+    
+    this.groupedProjectData$ = rawProjectData$.pipe(
+      map(data => this.filterProjectData(data))
+    );
+    
     this.overviewStats$ = this.projectDataService.getOverviewStats();
   }
 
@@ -115,22 +126,41 @@ export class ProjectManagementComponent implements OnInit {
 
   onMemberSelectionChange(selectedMembers: string[]): void {
     this.selectedMembers = selectedMembers || [];
+    this.updateFilteredData();
   }
 
   onProjectSearchChange(value: string): void {
     this.projectSearchTerm = value;
+    this.updateFilteredData();
   }
 
   onTaskSearchChange(value: string): void {
     this.taskSearchTerm = value;
+    this.updateFilteredData();
   }
 
   onStatusFiltersChange(selectedStatuses: string[]): void {
     this.statusFilters = selectedStatuses || [];
+    this.updateFilteredData();
   }
 
   onProjectStatusFiltersChange(selectedStatuses: string[]): void {
     this.projectStatusFilters = selectedStatuses || [];
+    this.updateFilteredData();
+  }
+
+  private updateFilteredData(): void {
+    // 重新建立響應式數據流以應用新的篩選條件
+    const rawMemberData$ = this.projectDataService.getGroupedMemberData();
+    const rawProjectData$ = this.projectDataService.getGroupedProjectData();
+    
+    this.groupedMemberData$ = combineLatest([rawMemberData$, rawProjectData$]).pipe(
+      map(([memberData, projectData]) => this.filterMemberDataWithProjectStatus(memberData, projectData))
+    );
+    
+    this.groupedProjectData$ = rawProjectData$.pipe(
+      map(data => this.filterProjectData(data))
+    );
   }
 
   exportToExcel(): void {
@@ -198,8 +228,14 @@ export class ProjectManagementComponent implements OnInit {
     });
   }
 
-  filterMemberData(data: GroupedMemberData[]): GroupedMemberData[] {
-    return data.map(group => {
+  filterMemberDataWithProjectStatus(memberData: GroupedMemberData[], projectData: GroupedProjectData[]): GroupedMemberData[] {
+    // 建立專案狀態映射
+    const projectStatusMap = projectData.reduce((map, project) => {
+      map[project.project] = project.status;
+      return map;
+    }, {} as { [projectName: string]: string });
+
+    return memberData.map(group => {
       // 1. 成員篩選
       if (this.selectedMembers.length > 0 && !this.selectedMembers.includes(group.member)) {
         return null;
@@ -228,10 +264,12 @@ export class ProjectManagementComponent implements OnInit {
         filteredTasks = filteredTasks.filter(task => this.statusFilters.includes(task.status));
       }
 
-      // 4. 專案狀態篩選 (如果有選擇專案狀態，需要檢查該成員參與的專案狀態)
+      // 4. 專案狀態篩選 (根據專案狀態過濾工作項)
       if (this.projectStatusFilters.length > 0) {
-        // 這裡需要從 projectData 中獲取專案狀態資訊
-        // 暫時先保留所有任務，後續可以根據需要調整
+        filteredTasks = filteredTasks.filter(task => {
+          const projectStatus = projectStatusMap[task.project];
+          return projectStatus && this.projectStatusFilters.includes(projectStatus);
+        });
       }
 
       // 如果沒有符合條件的工作項，則不顯示該群組
@@ -606,9 +644,19 @@ export class ProjectManagementComponent implements OnInit {
 
   private refreshData(): void {
     this.projectCrudService.refreshData();
-    // 重新訂閱資料
-    this.groupedMemberData$ = this.projectDataService.getGroupedMemberData();
-    this.groupedProjectData$ = this.projectDataService.getGroupedProjectData();
+    
+    // 重新建立響應式數據流
+    const rawMemberData$ = this.projectDataService.getGroupedMemberData();
+    const rawProjectData$ = this.projectDataService.getGroupedProjectData();
+    
+    this.groupedMemberData$ = combineLatest([rawMemberData$, rawProjectData$]).pipe(
+      map(([memberData, projectData]) => this.filterMemberDataWithProjectStatus(memberData, projectData))
+    );
+    
+    this.groupedProjectData$ = rawProjectData$.pipe(
+      map(data => this.filterProjectData(data))
+    );
+    
     this.overviewStats$ = this.projectDataService.getOverviewStats();
   }
 }

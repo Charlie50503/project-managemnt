@@ -67,50 +67,13 @@ export class MemberViewTabComponent {
   }
 
   private filterData(data: GroupedMemberData[]): GroupedMemberData[] {
-    return data.map(group => {
-      // 過濾已完成項目
+    return data.filter(group => {
+      // 只保留 hideCompleted 的篩選邏輯，其他篩選已在主組件處理
       if (this.hideCompleted && group.overallStatus === 'completed') {
-        return null;
+        return false;
       }
-      
-      // 1. 成員篩選
-      if (this.selectedMembers && this.selectedMembers.length > 0 && !this.selectedMembers.includes(group.member)) {
-        return null;
-      }
-
-      // 2. 專案搜尋
-      const matchesProjectSearch = !this.projectSearchTerm ||
-        group.tasks.some(task => task.project.toLowerCase().includes(this.projectSearchTerm.toLowerCase()));
-
-      if (!matchesProjectSearch) {
-        return null;
-      }
-
-      // 3. 過濾工作項
-      let filteredTasks = group.tasks;
-
-      // 工作項搜尋
-      if (this.taskSearchTerm) {
-        filteredTasks = filteredTasks.filter(task => 
-          task.task.toLowerCase().includes(this.taskSearchTerm.toLowerCase())
-        );
-      }
-
-      // 工作項狀態篩選
-      if (this.statusFilters && this.statusFilters.length > 0) {
-        filteredTasks = filteredTasks.filter(task => this.statusFilters.includes(task.status));
-      }
-
-      // 如果沒有符合條件的工作項，則不顯示該群組
-      if (filteredTasks.length === 0) {
-        return null;
-      }
-
-      return {
-        ...group,
-        tasks: filteredTasks
-      };
-    }).filter(group => group !== null) as GroupedMemberData[];
+      return true;
+    });
   }
 
   onToggleRow(key: string): void {
