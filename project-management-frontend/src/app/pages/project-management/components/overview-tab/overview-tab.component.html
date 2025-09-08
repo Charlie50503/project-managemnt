@@ -7,28 +7,28 @@
         <div class="text-sm text-gray-600">進行中專案</div>
       </mat-card-content>
     </mat-card>
-    
+
     <mat-card class="text-center">
       <mat-card-content>
         <div class="text-2xl font-bold text-green-600">{{ stats.completedTasks }}</div>
         <div class="text-sm text-gray-600">已完成任務</div>
       </mat-card-content>
     </mat-card>
-    
+
     <mat-card class="text-center">
       <mat-card-content>
         <div class="text-2xl font-bold text-yellow-600">{{ stats.inProgressTasks }}</div>
         <div class="text-sm text-gray-600">進行中任務</div>
       </mat-card-content>
     </mat-card>
-    
+
     <mat-card class="text-center">
       <mat-card-content>
         <div class="text-2xl font-bold text-gray-600">{{ stats.notStartedTasks }}</div>
         <div class="text-sm text-gray-600">未開始任務</div>
       </mat-card-content>
     </mat-card>
-    
+
   </div>
 
   <!-- 風險警示 -->
@@ -43,8 +43,8 @@
       <div class="space-y-3" *ngIf="groupedMemberData$ | async as memberData">
         <ng-container *ngFor="let group of memberData">
           <ng-container *ngFor="let task of group.tasks">
-            <div *ngIf="task.status === 'in-progress' && isOverdue(task)" 
-                 class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+            <div *ngIf="task.status === 'in-progress' && isOverdue(task)"
+              class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
               <div>
                 <span class="font-medium">{{ task.project }} - {{ task.task }}</span>
                 <span class="text-sm text-gray-600 ml-2">({{ task.member }})</span>
@@ -53,10 +53,9 @@
             </div>
           </ng-container>
         </ng-container>
-        
+
         <ng-container *ngFor="let project of (groupedProjectData$ | async)">
-          <div *ngFor="let risk of project.risks" 
-               class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+          <div *ngFor="let risk of project.risks" class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
             <div>
               <span class="font-medium">{{ project.project }}</span>
               <span class="text-sm text-gray-600 ml-2">({{ project.system }})</span>
@@ -68,46 +67,124 @@
     </mat-card-content>
   </mat-card>
 
+  <!-- 篩選控制項 -->
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title class="flex items-center gap-2">
+        <mat-icon>filter_list</mat-icon>
+        篩選設定
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- 人員選擇 -->
+        <mat-form-field appearance="outline">
+          <mat-label>選擇人員</mat-label>
+          <mat-select multiple [value]="selectedMembers" (selectionChange)="onMemberSelectionChange($event.value)"
+            placeholder="選擇人員...">
+            <mat-option *ngFor="let member of availableMembers" [value]="member">
+              {{ member }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- 本期完成成果日期區間 -->
+        <div class="flex gap-2">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>完成成果開始日期</mat-label>
+            <input matInput [matDatepicker]="completedStartPicker" [(ngModel)]="completedStartDate"
+              (dateChange)="onCompletedDateRangeChange()">
+            <mat-datepicker-toggle matIconSuffix [for]="completedStartPicker"></mat-datepicker-toggle>
+            <mat-datepicker #completedStartPicker></mat-datepicker>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>完成成果結束日期</mat-label>
+            <input matInput [matDatepicker]="completedEndPicker" [(ngModel)]="completedEndDate"
+              (dateChange)="onCompletedDateRangeChange()">
+            <mat-datepicker-toggle matIconSuffix [for]="completedEndPicker"></mat-datepicker-toggle>
+            <mat-datepicker #completedEndPicker></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <!-- 下期重點目標日期區間 -->
+        <div class="flex gap-2">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>重點目標開始日期</mat-label>
+            <input matInput [matDatepicker]="upcomingStartPicker" [(ngModel)]="upcomingStartDate"
+              (dateChange)="onUpcomingDateRangeChange()">
+            <mat-datepicker-toggle matIconSuffix [for]="upcomingStartPicker"></mat-datepicker-toggle>
+            <mat-datepicker #upcomingStartPicker></mat-datepicker>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>重點目標結束日期</mat-label>
+            <input matInput [matDatepicker]="upcomingEndPicker" [(ngModel)]="upcomingEndDate"
+              (dateChange)="onUpcomingDateRangeChange()">
+            <mat-datepicker-toggle matIconSuffix [for]="upcomingEndPicker"></mat-datepicker-toggle>
+            <mat-datepicker #upcomingEndPicker></mat-datepicker>
+          </mat-form-field>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
   <!-- 本期成果與下期目標 -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <mat-card>
       <mat-card-header>
-        <mat-card-title class="text-green-600">本期完成成果</mat-card-title>
+        <mat-card-title class="text-green-600 flex items-center gap-2">
+          <mat-icon>check_circle</mat-icon>
+          本期完成成果
+        </mat-card-title>
+        <div class="text-sm text-gray-600">
+          {{ formatDate(completedStartDate.toISOString()) }} ~ {{ formatDate(completedEndDate.toISOString()) }}
+        </div>
       </mat-card-header>
       <mat-card-content>
-        <div class="space-y-3" *ngIf="groupedMemberData$ | async as memberData">
-          <ng-container *ngFor="let group of memberData">
-            <ng-container *ngFor="let task of group.tasks">
-              <div *ngIf="task.status === 'completed'" class="flex items-center gap-3">
-                <mat-icon class="text-green-600">check_circle</mat-icon>
-                <div>
-                  <div class="font-medium">{{ task.project }} - {{ task.task }}</div>
-                  <div class="text-sm text-gray-600">
-                    {{ task.actualEndDate ? '於 ' + task.actualEndDate + ' 完成' : '已完成' }}
-                  </div>
-                </div>
+        <div class="space-y-3" *ngIf="filteredCompletedTasks$ | async as completedTasks">
+          <div *ngFor="let task of completedTasks" class="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+            <mat-icon class="text-green-600">check_circle</mat-icon>
+            <div class="flex-1">
+              <div class="font-medium">{{ task.project }} - {{ task.task }}</div>
+              <div class="text-sm text-gray-600">
+                {{ task.member }} • 於 {{ formatDate(task.actualEndDate) }} 完成
               </div>
-            </ng-container>
-          </ng-container>
+            </div>
+          </div>
+          <div *ngIf="completedTasks.length === 0" class="text-center text-gray-500 py-4">
+            此期間內沒有完成的任務
+          </div>
         </div>
       </mat-card-content>
     </mat-card>
 
     <mat-card>
       <mat-card-header>
-        <mat-card-title class="text-blue-600">下期重點目標</mat-card-title>
+        <mat-card-title class="text-blue-600 flex items-center gap-2">
+          <mat-icon>schedule</mat-icon>
+          下期重點目標
+        </mat-card-title>
+        <div class="text-sm text-gray-600">
+          {{ formatDate(upcomingStartDate.toISOString()) }} ~ {{ formatDate(upcomingEndDate.toISOString()) }}
+        </div>
       </mat-card-header>
       <mat-card-content>
-        <div class="space-y-3" *ngIf="groupedProjectData$ | async as projectData">
-          <ng-container *ngFor="let project of projectData">
-            <div class="flex items-center gap-3">
-              <mat-icon class="text-blue-600">schedule</mat-icon>
-              <div>
-                <div class="font-medium">{{ project.nextMilestone }}</div>
-                <div class="text-sm text-gray-600">{{ project.project }} - 預計 {{ project.expectedEndDate }}</div>
+        <div class="space-y-3" *ngIf="filteredUpcomingTasks$ | async as upcomingTasks">
+          <div *ngFor="let task of upcomingTasks" class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+            <mat-icon [class]="getTaskStatusIcon(task.status).class">{{ getTaskStatusIcon(task.status).icon
+              }}</mat-icon>
+            <div class="flex-1">
+              <div class="font-medium">{{ task.project }} - {{ task.task }}</div>
+              <div class="text-sm text-gray-600">
+                {{ task.member }} • {{ formatDate(task.startDate) }} ~ {{ formatDate(task.endDate) }}
+              </div>
+              <div class="text-xs text-gray-500">
+                狀態: {{ getStatusText(task.status) }}
               </div>
             </div>
-          </ng-container>
+          </div>
+          <div *ngIf="upcomingTasks.length === 0" class="text-center text-gray-500 py-4">
+            此期間內沒有重點目標
+          </div>
         </div>
       </mat-card-content>
     </mat-card>
