@@ -48,7 +48,7 @@ export class HomeComponent implements AfterViewInit {
   public environmentName = environment.name;
   public modulePageList: pageInterface[] = [
     {
-      pageName: '專案進度管理',
+      pageName: '案件進度管理',
       isShow: true,
       route: '/home/project-management',
       type: 'link',
