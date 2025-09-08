@@ -65,12 +65,12 @@ export class BulkTaskFormDialogComponent implements OnInit {
   members$: Observable<Member[]>;
   projects$: Observable<Project[]>;
   dataSource: any[] = [];
-  
+
   displayedColumns: string[] = [
-    'project', 'system', 'task', 'member', 'complexity', 
+    'project', 'system', 'task', 'member', 'complexity',
     'priority', 'status', 'startDate', 'endDate', 'actions'
   ];
-  
+
   statusOptions: { value: TaskStatus; label: string }[] = [
     { value: 'not-started', label: '未開始' },
     { value: 'in-progress', label: '進行中' },
@@ -104,14 +104,14 @@ export class BulkTaskFormDialogComponent implements OnInit {
   ngOnInit(): void {
     // 初始化時新增一行
     this.addNewRow();
-    
+
     // 如果有預設專案名稱，設定第一行的專案
     if (this.data.projectName) {
       const firstRow = this.getTasksFormArray().at(0) as FormGroup;
       firstRow.patchValue({ project: this.data.projectName });
       this.onProjectChange(0);
     }
-    
+
     // 更新資料來源
     this.updateDataSource();
   }
@@ -151,7 +151,7 @@ export class BulkTaskFormDialogComponent implements OnInit {
     const tasksArray = this.getTasksFormArray();
     const sourceRow = tasksArray.at(index) as FormGroup;
     const copiedRow = this.createTaskFormGroup();
-    
+
     // 複製所有欄位值，但清空任務名稱
     const sourceValue = sourceRow.value;
     copiedRow.patchValue({
@@ -160,7 +160,7 @@ export class BulkTaskFormDialogComponent implements OnInit {
       status: 'not-started', // 重設為未開始
       actualEndDate: '' // 清空實際完成日期
     });
-    
+
     tasksArray.insert(index + 1, copiedRow);
     this.updateDataSource();
   }
@@ -182,7 +182,7 @@ export class BulkTaskFormDialogComponent implements OnInit {
   onProjectChange(index: number): void {
     const taskForm = this.getTasksFormArray().at(index) as FormGroup;
     const selectedProject = taskForm.get('project')?.value;
-    
+
     this.projects$.subscribe(projects => {
       const project = projects.find(p => p.project === selectedProject);
       if (project) {
@@ -194,7 +194,7 @@ export class BulkTaskFormDialogComponent implements OnInit {
   onStatusChange(index: number): void {
     const taskForm = this.getTasksFormArray().at(index) as FormGroup;
     const status = taskForm.get('status')?.value;
-    
+
     if (status === 'completed') {
       taskForm.patchValue({ actualEndDate: new Date() });
     } else {
@@ -205,7 +205,7 @@ export class BulkTaskFormDialogComponent implements OnInit {
   onSubmit(): void {
     this.bulkTaskForm.markAllAsTouched();
     this.bulkTaskForm.updateValueAndValidity();
-    
+
     if (this.bulkTaskForm.valid) {
       const tasksData = this.getTasksFormArray().value.map((task: any) => ({
         project: task.project,
@@ -240,7 +240,7 @@ export class BulkTaskFormDialogComponent implements OnInit {
   getRowErrorMessage(index: number, fieldName: string): string {
     const taskForm = this.getTasksFormArray().at(index) as FormGroup;
     const field = taskForm.get(fieldName);
-    
+
     if (field?.hasError('required')) {
       return `${this.getFieldLabel(fieldName)}為必填欄位`;
     }
