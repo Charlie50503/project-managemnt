@@ -16,6 +16,7 @@ import { Member } from '../../../../shared/models/member.model';
 import { ProjectCrudService } from '../../../../core/services/project-crud.service';
 import { SystemCrudService, System } from '../../services/system-crud.service';
 import { ErrorMessagePipe } from 'src/app/core/pipes/error-message.pipe';
+import { DateUtils } from '../../../../shared/utils/date.utils';
 
 export interface ProjectFormDialogData {
   project?: Project;
@@ -96,10 +97,8 @@ export class ProjectFormDialogComponent implements OnInit {
     const endDate = form.get('expectedEndDate')?.value;
     
     // 只有當兩個日期都有值且都是有效日期時才進行比較
-    if (startDate && endDate && 
-        startDate instanceof Date && endDate instanceof Date &&
-        !isNaN(startDate.getTime()) && !isNaN(endDate.getTime()) &&
-        startDate >= endDate) {
+    if (DateUtils.isValidDate(startDate) && DateUtils.isValidDate(endDate) &&
+        DateUtils.compareDates(startDate, endDate) >= 0) {
       return { dateInvalid: true };
     }
     return null;
@@ -112,26 +111,14 @@ export class ProjectFormDialogComponent implements OnInit {
       project: project.project,
       system: project.system,
       projectManager: project.projectManager,
-      startDate: this.parseDate(project.startDate),
-      expectedEndDate: this.parseDate(project.expectedEndDate),
+      startDate: DateUtils.parseDate(project.startDate),
+      expectedEndDate: DateUtils.parseDate(project.expectedEndDate),
       demo: project.demo || '',
       status: project.status
     });
   }
 
-  private parseDate(dateString: string | null | undefined): Date | null {
-    if (!dateString || dateString.trim() === '') {
-      return null;
-    }
-    
-    const date = new Date(dateString);
-    // 檢查日期是否有效
-    if (isNaN(date.getTime())) {
-      return null;
-    }
-    
-    return date;
-  }
+
 
 
 
@@ -146,8 +133,8 @@ export class ProjectFormDialogComponent implements OnInit {
         project: formValue.project,
         system: formValue.system,
         projectManager: formValue.projectManager,
-        startDate: this.formatDate(formValue.startDate),
-        expectedEndDate: this.formatDate(formValue.expectedEndDate),
+        startDate: DateUtils.formatDate(formValue.startDate),
+        expectedEndDate: DateUtils.formatDate(formValue.expectedEndDate),
         demo: formValue.demo || '',
         status: formValue.status,
         totalTasks: this.data.project?.totalTasks || 0,
@@ -165,10 +152,7 @@ export class ProjectFormDialogComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  private formatDate(date: Date | null): string {
-    if (!date || isNaN(date.getTime())) return '';
-    return date.toISOString().split('T')[0];
-  }
+
 
   getErrorMessage(fieldName: string): string {
     const field = this.projectForm.get(fieldName);

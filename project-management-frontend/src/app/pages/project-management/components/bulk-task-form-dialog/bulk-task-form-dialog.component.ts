@@ -18,6 +18,7 @@ import { Task, TaskStatus, Priority, Complexity, Project } from '../../../../sha
 import { Member } from '../../../../shared/models/member.model';
 import { ProjectCrudService } from '../../../../core/services/project-crud.service';
 import { ErrorMessagePipe } from 'src/app/core/pipes/error-message.pipe';
+import { DateUtils } from '../../../../shared/utils/date.utils';
 
 export interface BulkTaskFormDialogData {
   projectName?: string;
@@ -215,9 +216,9 @@ export class BulkTaskFormDialogComponent implements OnInit {
         complexity: task.complexity,
         priority: task.priority,
         status: task.status,
-        startDate: this.formatDate(task.startDate),
-        endDate: this.formatDate(task.endDate),
-        actualEndDate: task.actualEndDate ? this.formatDate(task.actualEndDate) : null
+        startDate: DateUtils.formatDate(task.startDate),
+        endDate: DateUtils.formatDate(task.endDate),
+        actualEndDate: task.actualEndDate ? DateUtils.formatDate(task.actualEndDate) : null
       }));
 
       this.dialogRef.close(tasksData);
@@ -230,12 +231,7 @@ export class BulkTaskFormDialogComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  private formatDate(date: Date | string): string {
-    if (!date) return '';
-    if (typeof date === 'string') return date;
-    if (isNaN(date.getTime())) return '';
-    return date.toISOString().split('T')[0];
-  }
+
 
   getRowErrorMessage(index: number, fieldName: string): string {
     const taskForm = this.getTasksFormArray().at(index) as FormGroup;
