@@ -38,7 +38,7 @@ export interface SortState {
 export class ProjectViewTabComponent {
   @Input() groupedProjectData$!: Observable<GroupedProjectData[]>;
   @Input() searchTerm!: string;
-  @Input() statusFilter!: string;
+  @Input() statusFilters!: string[];
   @Input() hideCompleted!: boolean;
   @Input() expandedRows!: Set<string>;
   @Output() toggleRow = new EventEmitter<string>();
@@ -76,10 +76,10 @@ export class ProjectViewTabComponent {
   }
 
   private filterData(data: GroupedProjectData[]): GroupedProjectData[] {
-    return data.filter(project => {
+    return data.map(project => {
       // 過濾已完成項目
       if (this.hideCompleted && project.status === 'completed') {
-        return false;
+        return null;
       }
 
       const matchesSearch = project.project.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
@@ -89,14 +89,33 @@ export class ProjectViewTabComponent {
           member.tasks.some(task => task.task.toLowerCase().includes(this.searchTerm.toLowerCase()))
         );
 
-      const matchesStatus = this.statusFilter === 'all' ||
-        project.status === this.statusFilter ||
-        project.membersList.some(member =>
-          member.tasks.some(task => task.status === this.statusFilter)
-        );
+      if (!matchesSearch) {
+        return null;
+      }
 
-      return matchesSearch && matchesStatus;
-    });
+      // 過濾每個成員的工作項
+      const filteredMembersList = project.membersList.map(member => {
+        let filteredTasks = member.tasks;
+        if (this.statusFilters && this.statusFilters.length > 0) {
+          filteredTasks = member.tasks.filter(task => this.statusFilters.includes(task.status));
+        }
+
+        return {
+          ...member,
+          tasks: filteredTasks
+        };
+      }).filter(member => member.tasks.length > 0 || !this.statusFilters || this.statusFilters.length === 0);
+
+      // 如果沒有符合條件的成員，則不顯示該專案
+      if (filteredMembersList.length === 0 && this.statusFilters && this.statusFilters.length > 0) {
+        return null;
+      }
+
+      return {
+        ...project,
+        membersList: filteredMembersList
+      };
+    }).filter(project => project !== null) as GroupedProjectData[];
   }
 
   private sortData(data: GroupedProjectData[]): GroupedProjectData[] {

@@ -8,51 +8,29 @@
           <p class="text-gray-600">進度報告 - {{ getCurrentDate() }}</p>
         </div>
         <div class="flex gap-2">
-          <button 
-            mat-raised-button 
-            color="warn"
-            (click)="openCreateSystemDialog()"
-            class="flex items-center gap-2">
+          <button mat-raised-button color="warn" (click)="openCreateSystemDialog()" class="flex items-center gap-2">
             <mat-icon>computer</mat-icon>
             新增系統
           </button>
-          <button 
-            mat-raised-button 
-            color="primary"
-            (click)="openCreateProjectDialog()"
-            class="flex items-center gap-2">
+          <button mat-raised-button color="primary" (click)="openCreateProjectDialog()" class="flex items-center gap-2">
             <mat-icon>add</mat-icon>
             新增案件
           </button>
-          <button 
-            mat-stroked-button 
-            color="primary"
-            (click)="openProjectSortDialog()"
-            class="flex items-center gap-2">
+          <button mat-stroked-button color="primary" (click)="openProjectSortDialog()" class="flex items-center gap-2">
             <mat-icon>sort</mat-icon>
             排序管理
           </button>
-          <button 
-            mat-raised-button 
-            color="accent"
-            (click)="openCreateTaskDialog()"
-            class="flex items-center gap-2">
+          <button mat-raised-button color="accent" (click)="openCreateTaskDialog()" class="flex items-center gap-2">
             <mat-icon>assignment_add</mat-icon>
             新增工作項
           </button>
-          <button 
-            mat-stroked-button 
-            color="accent"
-            (click)="openBulkCreateTaskDialog()"
+          <button mat-stroked-button color="accent" (click)="openBulkCreateTaskDialog()"
             class="flex items-center gap-2">
             <mat-icon>playlist_add</mat-icon>
             批量新增工作項
           </button>
           <!-- 匯出選單 -->
-          <button 
-            mat-button 
-            [matMenuTriggerFor]="exportMenu"
-            class="flex items-center gap-2">
+          <button mat-button [matMenuTriggerFor]="exportMenu" class="flex items-center gap-2">
             匯出 Excel
             <mat-icon>arrow_drop_down</mat-icon>
           </button>
@@ -77,20 +55,15 @@
       <div class="flex gap-4 mb-4">
         <mat-form-field class="flex-1" appearance="outline">
           <mat-label>搜尋成員、專案或任務...</mat-label>
-          <input 
-            matInput 
-            [value]="searchTerm"
-            (input)="onSearchChange($any($event.target).value || '')"
+          <input matInput [value]="searchTerm" (input)="onSearchChange($any($event.target).value || '')"
             placeholder="搜尋成員、專案或任務...">
           <mat-icon matPrefix>search</mat-icon>
         </mat-form-field>
-        
+
         <mat-form-field appearance="outline">
-          <mat-label>狀態篩選</mat-label>
-          <mat-select 
-            [value]="statusFilter"
-            (selectionChange)="onStatusFilterChange($event.value)">
-            <mat-option value="all">所有狀態</mat-option>
+          <mat-label>工作項狀態篩選</mat-label>
+          <mat-select multiple [value]="statusFilters" (selectionChange)="onStatusFiltersChange($event.value)"
+            placeholder="選擇狀態...">
             <mat-option value="not-started">未開始</mat-option>
             <mat-option value="in-progress">進行中</mat-option>
             <mat-option value="completed">已完成</mat-option>
@@ -103,16 +76,11 @@
     </div>
 
     <!-- 導航標籤 -->
-    <mat-tab-group 
-      [(selectedIndex)]="selectedTabIndex" 
-      class="mb-6"
-      (selectedTabChange)="onTabChange($event)">
-      
+    <mat-tab-group [(selectedIndex)]="selectedTabIndex" class="mb-6" (selectedTabChange)="onTabChange($event)">
+
       <mat-tab label="總覽摘要">
         <div class="pt-6">
-          <app-overview-tab 
-            [overviewStats$]="overviewStats$"
-            [groupedMemberData$]="groupedMemberData$"
+          <app-overview-tab [overviewStats$]="overviewStats$" [groupedMemberData$]="groupedMemberData$"
             [groupedProjectData$]="groupedProjectData$">
           </app-overview-tab>
         </div>
@@ -120,16 +88,10 @@
 
       <mat-tab label="人員視角表格">
         <div class="pt-6">
-          <app-member-view-tab
-            [groupedMemberData$]="groupedMemberData$"
-            [searchTerm]="searchTerm"
-            [statusFilter]="statusFilter"
-            [hideCompleted]="hideCompleted"
-            [expandedRows]="expandedRows"
-            (toggleRow)="toggleRow($event)"
-            (editTask)="openEditTaskDialog($event)"
-            (copyTask)="openCopyTaskDialog($event)"
-            (addTask)="openCreateTaskDialog()"
+          <app-member-view-tab [groupedMemberData$]="groupedMemberData$" [searchTerm]="searchTerm"
+            [statusFilters]="statusFilters" [hideCompleted]="hideCompleted" [expandedRows]="expandedRows"
+            (toggleRow)="toggleRow($event)" (editTask)="openEditTaskDialog($event)"
+            (copyTask)="openCopyTaskDialog($event)" (addTask)="openCreateTaskDialog()"
             (deleteTask)="openDeleteTaskDialog($event)">
           </app-member-view-tab>
         </div>
@@ -137,18 +99,11 @@
 
       <mat-tab label="專案視角表格">
         <div class="pt-6">
-          <app-project-view-tab
-            [groupedProjectData$]="groupedProjectData$"
-            [searchTerm]="searchTerm"
-            [statusFilter]="statusFilter"
-            [hideCompleted]="hideCompleted"
-            [expandedRows]="expandedRows"
-            (toggleRow)="toggleRow($event)"
-            (editProject)="openEditProjectDialog($event)"
-            (addTask)="openCreateTaskDialog($event)"
-            (bulkAddTask)="openBulkCreateTaskDialog($event)"
-            (editTask)="openEditTaskDialog($event)"
-            (copyTask)="openCopyTaskDialog($event)"
+          <app-project-view-tab [groupedProjectData$]="groupedProjectData$" [searchTerm]="searchTerm"
+            [statusFilters]="statusFilters" [hideCompleted]="hideCompleted" [expandedRows]="expandedRows"
+            (toggleRow)="toggleRow($event)" (editProject)="openEditProjectDialog($event)"
+            (addTask)="openCreateTaskDialog($event)" (bulkAddTask)="openBulkCreateTaskDialog($event)"
+            (editTask)="openEditTaskDialog($event)" (copyTask)="openCopyTaskDialog($event)"
             (deleteTask)="openDeleteTaskDialog($event)">
           </app-project-view-tab>
         </div>

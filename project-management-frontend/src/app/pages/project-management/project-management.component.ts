@@ -51,7 +51,7 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
 export class ProjectManagementComponent implements OnInit {
   activeTab = 'overview';
   searchTerm = '';
-  statusFilter = 'all';
+  statusFilters: string[] = [];
   hideCompleted = false;
   expandedRows = new Set<string>();
 
@@ -105,8 +105,8 @@ export class ProjectManagementComponent implements OnInit {
     this.searchTerm = value;
   }
 
-  onStatusFilterChange(value: string): void {
-    this.statusFilter = value;
+  onStatusFiltersChange(selectedStatuses: string[]): void {
+    this.statusFilters = selectedStatuses || [];
   }
 
   exportToExcel(): void {
@@ -175,22 +175,36 @@ export class ProjectManagementComponent implements OnInit {
   }
 
   filterMemberData(data: GroupedMemberData[]): GroupedMemberData[] {
-    return data.filter(group => {
+    return data.map(group => {
       const matchesSearch = group.member.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         group.project.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         group.system.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         group.tasks.some(task => task.task.toLowerCase().includes(this.searchTerm.toLowerCase()));
 
-      const matchesStatus = this.statusFilter === 'all' ||
-        group.overallStatus === this.statusFilter ||
-        group.tasks.some(task => task.status === this.statusFilter);
+      if (!matchesSearch) {
+        return null;
+      }
 
-      return matchesSearch && matchesStatus;
-    });
+      // 過濾工作項
+      let filteredTasks = group.tasks;
+      if (this.statusFilters.length > 0) {
+        filteredTasks = group.tasks.filter(task => this.statusFilters.includes(task.status));
+      }
+
+      // 如果沒有符合條件的工作項，則不顯示該群組
+      if (filteredTasks.length === 0 && this.statusFilters.length > 0) {
+        return null;
+      }
+
+      return {
+        ...group,
+        tasks: filteredTasks
+      };
+    }).filter(group => group !== null) as GroupedMemberData[];
   }
 
   filterProjectData(data: GroupedProjectData[]): GroupedProjectData[] {
-    return data.filter(project => {
+    return data.map(project => {
       const matchesSearch = project.project.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         project.system.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         project.membersList.some(member =>
@@ -198,14 +212,33 @@ export class ProjectManagementComponent implements OnInit {
           member.tasks.some(task => task.task.toLowerCase().includes(this.searchTerm.toLowerCase()))
         );
 
-      const matchesStatus = this.statusFilter === 'all' ||
-        project.status === this.statusFilter ||
-        project.membersList.some(member =>
-          member.tasks.some(task => task.status === this.statusFilter)
-        );
+      if (!matchesSearch) {
+        return null;
+      }
 
-      return matchesSearch && matchesStatus;
-    });
+      // 過濾每個成員的工作項
+      const filteredMembersList = project.membersList.map(member => {
+        let filteredTasks = member.tasks;
+        if (this.statusFilters.length > 0) {
+          filteredTasks = member.tasks.filter(task => this.statusFilters.includes(task.status));
+        }
+
+        return {
+          ...member,
+          tasks: filteredTasks
+        };
+      }).filter(member => member.tasks.length > 0 || this.statusFilters.length === 0);
+
+      // 如果沒有符合條件的成員，則不顯示該專案
+      if (filteredMembersList.length === 0 && this.statusFilters.length > 0) {
+        return null;
+      }
+
+      return {
+        ...project,
+        membersList: filteredMembersList
+      };
+    }).filter(project => project !== null) as GroupedProjectData[];
   }
 
   // 案件 CRUD 操作

@@ -31,7 +31,7 @@ import { StatusHelperService } from '../../../../shared/services/status-helper.s
 export class MemberViewTabComponent {
   @Input() groupedMemberData$!: Observable<GroupedMemberData[]>;
   @Input() searchTerm!: string;
-  @Input() statusFilter!: string;
+  @Input() statusFilters!: string[];
   @Input() hideCompleted!: boolean;
   @Input() expandedRows!: Set<string>;
   @Output() toggleRow = new EventEmitter<string>();
@@ -63,10 +63,10 @@ export class MemberViewTabComponent {
   }
 
   private filterData(data: GroupedMemberData[]): GroupedMemberData[] {
-    return data.filter(group => {
+    return data.map(group => {
       // 過濾已完成項目
       if (this.hideCompleted && group.overallStatus === 'completed') {
-        return false;
+        return null;
       }
       
       const matchesSearch = group.member.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
@@ -76,12 +76,26 @@ export class MemberViewTabComponent {
                              task.task.toLowerCase().includes(this.searchTerm.toLowerCase())
                            );
       
-      const matchesStatus = this.statusFilter === 'all' || 
-                           group.overallStatus === this.statusFilter ||
-                           group.tasks.some(task => task.status === this.statusFilter);
-      
-      return matchesSearch && matchesStatus;
-    });
+      if (!matchesSearch) {
+        return null;
+      }
+
+      // 過濾工作項
+      let filteredTasks = group.tasks;
+      if (this.statusFilters && this.statusFilters.length > 0) {
+        filteredTasks = group.tasks.filter(task => this.statusFilters.includes(task.status));
+      }
+
+      // 如果沒有符合條件的工作項，則不顯示該群組
+      if (filteredTasks.length === 0 && this.statusFilters && this.statusFilters.length > 0) {
+        return null;
+      }
+
+      return {
+        ...group,
+        tasks: filteredTasks
+      };
+    }).filter(group => group !== null) as GroupedMemberData[];
   }
 
   onToggleRow(key: string): void {
