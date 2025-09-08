@@ -63,7 +63,15 @@ export class DataManagementComponent implements OnInit {
     this.projects$ = this.projectCrudService.projects$;
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    // 確保 ProjectCrudService 的資料已載入
+    this.projectCrudService.refreshData();
+    
+    // 除錯：檢查人員資料是否載入
+    this.projectCrudService.members$.subscribe(members => {
+      console.log('ProjectCrudService members data:', members);
+    });
+  }
 
   // 人員管理方法
   openCreateMemberDialog(): void {
