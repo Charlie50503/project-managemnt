@@ -23,12 +23,12 @@ export class ProjectDataService {
         const grouped: { [key: string]: GroupedMemberData } = {};
 
         data.memberTableData.forEach(item => {
-          const key = `${item.member}-${item.project}`;
+          const key = item.member; // 只按人員分組，不包含專案
           if (!grouped[key]) {
             grouped[key] = {
               member: item.member,
-              project: item.project,
-              system: item.system,
+              project: '', // 清空單一專案欄位，因為一個人可能參與多個專案
+              system: '', // 清空單一系統欄位，因為一個人可能參與多個系統
               workload: 0,
               tasks: [],
               overallProgress: 0,
@@ -40,7 +40,7 @@ export class ProjectDataService {
           grouped[key].tasks.push(item);
         });
 
-        // 計算每個成員+專案的整體進度和狀態
+        // 計算每個成員的整體進度和狀態
         Object.keys(grouped).forEach(key => {
           const group = grouped[key];
           const completedTasks = group.tasks.filter(task => task.status === 'completed').length;
@@ -56,6 +56,22 @@ export class ProjectDataService {
             group.overallStatus = 'in-progress';
           } else {
             group.overallStatus = 'not-started';
+          }
+
+          // 設定專案和系統資訊（顯示參與的專案數量）
+          const uniqueProjects = [...new Set(group.tasks.map(task => task.project))];
+          const uniqueSystems = [...new Set(group.tasks.map(task => task.system))];
+
+          if (uniqueProjects.length === 1) {
+            group.project = uniqueProjects[0];
+          } else {
+            group.project = `${uniqueProjects.length} 個專案`;
+          }
+
+          if (uniqueSystems.length === 1) {
+            group.system = uniqueSystems[0];
+          } else {
+            group.system = `${uniqueSystems.length} 個系統`;
           }
 
           // 計算demo和截圖 (簡化版本)

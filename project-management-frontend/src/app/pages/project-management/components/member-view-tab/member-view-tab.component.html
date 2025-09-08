@@ -10,7 +10,7 @@
       新增項目
     </button>
   </div>
-  
+
   <div class="overflow-x-auto">
     <table mat-table [dataSource]="(filteredData$ | async) || []" multiTemplateDataRows class="w-full">
 
@@ -29,6 +29,7 @@
         <th mat-header-cell *matHeaderCellDef>姓名</th>
         <td mat-cell *matCellDef="let group">
           <div class="font-medium text-gray-900">{{ group.member }}</div>
+          <div class="text-xs text-gray-500 mt-1">{{ group.project }}</div>
         </td>
       </ng-container>
 

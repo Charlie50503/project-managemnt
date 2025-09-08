@@ -70,9 +70,11 @@ export class MemberViewTabComponent {
       }
       
       const matchesSearch = group.member.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           group.project.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           group.system.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           group.tasks.some(task => task.task.toLowerCase().includes(this.searchTerm.toLowerCase()));
+                           group.tasks.some(task => 
+                             task.project.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                             task.system.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                             task.task.toLowerCase().includes(this.searchTerm.toLowerCase())
+                           );
       
       const matchesStatus = this.statusFilter === 'all' || 
                            group.overallStatus === this.statusFilter ||
@@ -91,7 +93,7 @@ export class MemberViewTabComponent {
   }
 
   getRowKey(group: GroupedMemberData): string {
-    return `${group.member}-${group.project}`;
+    return group.member; // 現在只按人員分組，所以只用人員名稱作為 key
   }
 
   getTaskStatusCount(tasks: any[], status: string): number {
