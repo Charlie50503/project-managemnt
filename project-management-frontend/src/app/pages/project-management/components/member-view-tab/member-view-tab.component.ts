@@ -31,7 +31,11 @@ import { StatusHelperService } from '../../../../shared/services/status-helper.s
 export class MemberViewTabComponent {
   @Input() groupedMemberData$!: Observable<GroupedMemberData[]>;
   @Input() searchTerm!: string;
+  @Input() selectedMembers!: string[];
+  @Input() projectSearchTerm!: string;
+  @Input() taskSearchTerm!: string;
   @Input() statusFilters!: string[];
+  @Input() projectStatusFilters!: string[];
   @Input() hideCompleted!: boolean;
   @Input() expandedRows!: Set<string>;
   @Output() toggleRow = new EventEmitter<string>();
@@ -69,25 +73,36 @@ export class MemberViewTabComponent {
         return null;
       }
       
-      const matchesSearch = group.member.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                           group.tasks.some(task => 
-                             task.project.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                             task.system.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                             task.task.toLowerCase().includes(this.searchTerm.toLowerCase())
-                           );
-      
-      if (!matchesSearch) {
+      // 1. 成員篩選
+      if (this.selectedMembers && this.selectedMembers.length > 0 && !this.selectedMembers.includes(group.member)) {
         return null;
       }
 
-      // 過濾工作項
+      // 2. 專案搜尋
+      const matchesProjectSearch = !this.projectSearchTerm ||
+        group.tasks.some(task => task.project.toLowerCase().includes(this.projectSearchTerm.toLowerCase()));
+
+      if (!matchesProjectSearch) {
+        return null;
+      }
+
+      // 3. 過濾工作項
       let filteredTasks = group.tasks;
+
+      // 工作項搜尋
+      if (this.taskSearchTerm) {
+        filteredTasks = filteredTasks.filter(task => 
+          task.task.toLowerCase().includes(this.taskSearchTerm.toLowerCase())
+        );
+      }
+
+      // 工作項狀態篩選
       if (this.statusFilters && this.statusFilters.length > 0) {
-        filteredTasks = group.tasks.filter(task => this.statusFilters.includes(task.status));
+        filteredTasks = filteredTasks.filter(task => this.statusFilters.includes(task.status));
       }
 
       // 如果沒有符合條件的工作項，則不顯示該群組
-      if (filteredTasks.length === 0 && this.statusFilters && this.statusFilters.length > 0) {
+      if (filteredTasks.length === 0) {
         return null;
       }
 

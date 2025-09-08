@@ -52,18 +52,33 @@
       </div>
 
       <!-- 搜尋與篩選 -->
-      <div class="flex gap-4 mb-4">
-        <mat-form-field class="flex-1" appearance="outline">
-          <mat-label>搜尋成員、專案或任務...</mat-label>
-          <input matInput [value]="searchTerm" (input)="onSearchChange($any($event.target).value || '')"
-            placeholder="搜尋成員、專案或任務...">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 mb-4">
+        <!-- 1. 搜尋成員選項 -->
+        <mat-form-field appearance="outline" class="col-span-2">
+          <mat-label>搜尋成員</mat-label>
+          <mat-select multiple [value]="selectedMembers" (selectionChange)="onMemberSelectionChange($event.value)"
+            placeholder="選擇成員...">
+            <mat-option *ngFor="let member of availableMembers" [value]="member">
+              {{ member }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- 2. 搜尋專案輸入框 -->
+        <mat-form-field appearance="outline" class="col-span-3">
+          <mat-label>搜尋專案</mat-label>
+          <input matInput [value]="projectSearchTerm" (input)="onProjectSearchChange($any($event.target).value || '')"
+            placeholder="輸入專案名稱...">
           <mat-icon matPrefix>search</mat-icon>
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>工作項狀態篩選</mat-label>
-          <mat-select multiple [value]="statusFilters" (selectionChange)="onStatusFiltersChange($event.value)"
-            placeholder="選擇狀態...">
+
+
+        <!-- 專案狀態複選 -->
+        <mat-form-field appearance="outline" class="col-span-2">
+          <mat-label>專案狀態</mat-label>
+          <mat-select multiple [value]="projectStatusFilters"
+            (selectionChange)="onProjectStatusFiltersChange($event.value)" placeholder="選擇專案狀態...">
             <mat-option value="not-started">未開始</mat-option>
             <mat-option value="in-progress">進行中</mat-option>
             <mat-option value="completed">已完成</mat-option>
@@ -72,7 +87,27 @@
             <mat-option value="cancelled">廢棄</mat-option>
           </mat-select>
         </mat-form-field>
+
+        <!-- 3. 搜尋工作項輸入框 -->
+        <mat-form-field appearance="outline" class="col-span-3">
+          <mat-label>搜尋工作項</mat-label>
+          <input matInput [value]="taskSearchTerm" (input)="onTaskSearchChange($any($event.target).value || '')"
+            placeholder="輸入工作項名稱...">
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+
+        <!-- 4. 工作項狀態複選 -->
+        <mat-form-field appearance="outline" class="col-span-2">
+          <mat-label>工作項狀態</mat-label>
+          <mat-select multiple [value]="statusFilters" (selectionChange)="onStatusFiltersChange($event.value)"
+            placeholder="選擇狀態...">
+            <mat-option value="not-started">未開始</mat-option>
+            <mat-option value="in-progress">進行中</mat-option>
+            <mat-option value="completed">已完成</mat-option>
+          </mat-select>
+        </mat-form-field>
       </div>
+
     </div>
 
     <!-- 導航標籤 -->
@@ -88,8 +123,9 @@
 
       <mat-tab label="人員視角表格">
         <div class="pt-6">
-          <app-member-view-tab [groupedMemberData$]="groupedMemberData$" [searchTerm]="searchTerm"
-            [statusFilters]="statusFilters" [hideCompleted]="hideCompleted" [expandedRows]="expandedRows"
+          <app-member-view-tab [groupedMemberData$]="groupedMemberData$" [selectedMembers]="selectedMembers"
+            [projectSearchTerm]="projectSearchTerm" [taskSearchTerm]="taskSearchTerm" [statusFilters]="statusFilters"
+            [projectStatusFilters]="projectStatusFilters" [hideCompleted]="hideCompleted" [expandedRows]="expandedRows"
             (toggleRow)="toggleRow($event)" (editTask)="openEditTaskDialog($event)"
             (copyTask)="openCopyTaskDialog($event)" (addTask)="openCreateTaskDialog()"
             (deleteTask)="openDeleteTaskDialog($event)">
@@ -99,8 +135,9 @@
 
       <mat-tab label="專案視角表格">
         <div class="pt-6">
-          <app-project-view-tab [groupedProjectData$]="groupedProjectData$" [searchTerm]="searchTerm"
-            [statusFilters]="statusFilters" [hideCompleted]="hideCompleted" [expandedRows]="expandedRows"
+          <app-project-view-tab [groupedProjectData$]="groupedProjectData$" [selectedMembers]="selectedMembers"
+            [projectSearchTerm]="projectSearchTerm" [taskSearchTerm]="taskSearchTerm" [statusFilters]="statusFilters"
+            [projectStatusFilters]="projectStatusFilters" [hideCompleted]="hideCompleted" [expandedRows]="expandedRows"
             (toggleRow)="toggleRow($event)" (editProject)="openEditProjectDialog($event)"
             (addTask)="openCreateTaskDialog($event)" (bulkAddTask)="openBulkCreateTaskDialog($event)"
             (editTask)="openEditTaskDialog($event)" (copyTask)="openCopyTaskDialog($event)"

@@ -38,7 +38,11 @@ export interface SortState {
 export class ProjectViewTabComponent {
   @Input() groupedProjectData$!: Observable<GroupedProjectData[]>;
   @Input() searchTerm!: string;
+  @Input() selectedMembers!: string[];
+  @Input() projectSearchTerm!: string;
+  @Input() taskSearchTerm!: string;
   @Input() statusFilters!: string[];
+  @Input() projectStatusFilters!: string[];
   @Input() hideCompleted!: boolean;
   @Input() expandedRows!: Set<string>;
   @Output() toggleRow = new EventEmitter<string>();
@@ -82,32 +86,53 @@ export class ProjectViewTabComponent {
         return null;
       }
 
-      const matchesSearch = project.project.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        project.system.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        project.membersList.some(member =>
-          member.member.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-          member.tasks.some(task => task.task.toLowerCase().includes(this.searchTerm.toLowerCase()))
-        );
+      // 1. 專案搜尋
+      const matchesProjectSearch = !this.projectSearchTerm ||
+        project.project.toLowerCase().includes(this.projectSearchTerm.toLowerCase());
 
-      if (!matchesSearch) {
+      if (!matchesProjectSearch) {
         return null;
       }
 
-      // 過濾每個成員的工作項
+      // 2. 專案狀態篩選
+      if (this.projectStatusFilters && this.projectStatusFilters.length > 0 && !this.projectStatusFilters.includes(project.status)) {
+        return null;
+      }
+
+      // 3. 過濾成員列表
       const filteredMembersList = project.membersList.map(member => {
+        // 成員篩選
+        if (this.selectedMembers && this.selectedMembers.length > 0 && !this.selectedMembers.includes(member.member)) {
+          return null;
+        }
+
+        // 過濾工作項
         let filteredTasks = member.tasks;
+
+        // 工作項搜尋
+        if (this.taskSearchTerm) {
+          filteredTasks = filteredTasks.filter(task => 
+            task.task.toLowerCase().includes(this.taskSearchTerm.toLowerCase())
+          );
+        }
+
+        // 工作項狀態篩選
         if (this.statusFilters && this.statusFilters.length > 0) {
-          filteredTasks = member.tasks.filter(task => this.statusFilters.includes(task.status));
+          filteredTasks = filteredTasks.filter(task => this.statusFilters.includes(task.status));
+        }
+
+        if (filteredTasks.length === 0) {
+          return null;
         }
 
         return {
           ...member,
           tasks: filteredTasks
         };
-      }).filter(member => member.tasks.length > 0 || !this.statusFilters || this.statusFilters.length === 0);
+      }).filter(member => member !== null);
 
       // 如果沒有符合條件的成員，則不顯示該專案
-      if (filteredMembersList.length === 0 && this.statusFilters && this.statusFilters.length > 0) {
+      if (filteredMembersList.length === 0) {
         return null;
       }
 

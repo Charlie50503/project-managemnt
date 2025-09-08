@@ -50,10 +50,17 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
 })
 export class ProjectManagementComponent implements OnInit {
   activeTab = 'overview';
-  searchTerm = '';
+  selectedMembers: string[] = [];
+  projectSearchTerm = '';
+  taskSearchTerm = '';
   statusFilters: string[] = [];
+  projectStatusFilters: string[] = [];
   hideCompleted = false;
   expandedRows = new Set<string>();
+
+  // 可用的選項列表
+  availableMembers: string[] = [];
+  availableProjectStatuses: string[] = ['not-started', 'in-progress', 'completed', 'pending', 'on-hold', 'cancelled'];
 
   groupedMemberData$: Observable<GroupedMemberData[]>;
   groupedProjectData$: Observable<GroupedProjectData[]>;
@@ -75,7 +82,12 @@ export class ProjectManagementComponent implements OnInit {
 
   selectedTabIndex = 0;
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    // 獲取可用的成員列表
+    this.groupedMemberData$.subscribe(data => {
+      this.availableMembers = [...new Set(data.map(item => item.member))].sort();
+    });
+  }
 
   getCurrentDate(): string {
     return new Date().toLocaleDateString('zh-TW');
@@ -101,12 +113,24 @@ export class ProjectManagementComponent implements OnInit {
     return this.expandedRows.has(key);
   }
 
-  onSearchChange(value: string): void {
-    this.searchTerm = value;
+  onMemberSelectionChange(selectedMembers: string[]): void {
+    this.selectedMembers = selectedMembers || [];
+  }
+
+  onProjectSearchChange(value: string): void {
+    this.projectSearchTerm = value;
+  }
+
+  onTaskSearchChange(value: string): void {
+    this.taskSearchTerm = value;
   }
 
   onStatusFiltersChange(selectedStatuses: string[]): void {
     this.statusFilters = selectedStatuses || [];
+  }
+
+  onProjectStatusFiltersChange(selectedStatuses: string[]): void {
+    this.projectStatusFilters = selectedStatuses || [];
   }
 
   exportToExcel(): void {
@@ -176,23 +200,42 @@ export class ProjectManagementComponent implements OnInit {
 
   filterMemberData(data: GroupedMemberData[]): GroupedMemberData[] {
     return data.map(group => {
-      const matchesSearch = group.member.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        group.project.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        group.system.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        group.tasks.some(task => task.task.toLowerCase().includes(this.searchTerm.toLowerCase()));
-
-      if (!matchesSearch) {
+      // 1. 成員篩選
+      if (this.selectedMembers.length > 0 && !this.selectedMembers.includes(group.member)) {
         return null;
       }
 
-      // 過濾工作項
+      // 2. 專案搜尋
+      const matchesProjectSearch = this.projectSearchTerm === '' ||
+        group.tasks.some(task => task.project.toLowerCase().includes(this.projectSearchTerm.toLowerCase()));
+
+      if (!matchesProjectSearch) {
+        return null;
+      }
+
+      // 3. 過濾工作項 (根據工作項搜尋和狀態)
       let filteredTasks = group.tasks;
+
+      // 工作項搜尋
+      if (this.taskSearchTerm) {
+        filteredTasks = filteredTasks.filter(task =>
+          task.task.toLowerCase().includes(this.taskSearchTerm.toLowerCase())
+        );
+      }
+
+      // 工作項狀態篩選
       if (this.statusFilters.length > 0) {
-        filteredTasks = group.tasks.filter(task => this.statusFilters.includes(task.status));
+        filteredTasks = filteredTasks.filter(task => this.statusFilters.includes(task.status));
+      }
+
+      // 4. 專案狀態篩選 (如果有選擇專案狀態，需要檢查該成員參與的專案狀態)
+      if (this.projectStatusFilters.length > 0) {
+        // 這裡需要從 projectData 中獲取專案狀態資訊
+        // 暫時先保留所有任務，後續可以根據需要調整
       }
 
       // 如果沒有符合條件的工作項，則不顯示該群組
-      if (filteredTasks.length === 0 && this.statusFilters.length > 0) {
+      if (filteredTasks.length === 0) {
         return null;
       }
 
@@ -205,32 +248,53 @@ export class ProjectManagementComponent implements OnInit {
 
   filterProjectData(data: GroupedProjectData[]): GroupedProjectData[] {
     return data.map(project => {
-      const matchesSearch = project.project.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        project.system.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        project.membersList.some(member =>
-          member.member.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-          member.tasks.some(task => task.task.toLowerCase().includes(this.searchTerm.toLowerCase()))
-        );
+      // 1. 專案搜尋
+      const matchesProjectSearch = this.projectSearchTerm === '' ||
+        project.project.toLowerCase().includes(this.projectSearchTerm.toLowerCase());
 
-      if (!matchesSearch) {
+      if (!matchesProjectSearch) {
         return null;
       }
 
-      // 過濾每個成員的工作項
+      // 2. 專案狀態篩選
+      if (this.projectStatusFilters.length > 0 && !this.projectStatusFilters.includes(project.status)) {
+        return null;
+      }
+
+      // 3. 過濾成員列表
       const filteredMembersList = project.membersList.map(member => {
+        // 成員篩選
+        if (this.selectedMembers.length > 0 && !this.selectedMembers.includes(member.member)) {
+          return null;
+        }
+
+        // 過濾工作項
         let filteredTasks = member.tasks;
+
+        // 工作項搜尋
+        if (this.taskSearchTerm) {
+          filteredTasks = filteredTasks.filter(task =>
+            task.task.toLowerCase().includes(this.taskSearchTerm.toLowerCase())
+          );
+        }
+
+        // 工作項狀態篩選
         if (this.statusFilters.length > 0) {
-          filteredTasks = member.tasks.filter(task => this.statusFilters.includes(task.status));
+          filteredTasks = filteredTasks.filter(task => this.statusFilters.includes(task.status));
+        }
+
+        if (filteredTasks.length === 0) {
+          return null;
         }
 
         return {
           ...member,
           tasks: filteredTasks
         };
-      }).filter(member => member.tasks.length > 0 || this.statusFilters.length === 0);
+      }).filter(member => member !== null);
 
       // 如果沒有符合條件的成員，則不顯示該專案
-      if (filteredMembersList.length === 0 && this.statusFilters.length > 0) {
+      if (filteredMembersList.length === 0) {
         return null;
       }
 
@@ -382,10 +446,10 @@ export class ProjectManagementComponent implements OnInit {
 
     const dialogRef = this.dialog.open(TaskFormDialogComponent, {
       width: '800px',
-      data: { 
-        task: taskCopy, 
+      data: {
+        task: taskCopy,
         isEdit: false, // 這是新增模式，不是編輯模式
-        projectName: task.project 
+        projectName: task.project
       }
     });
 
