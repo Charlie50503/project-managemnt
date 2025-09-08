@@ -1,0 +1,191 @@
+<h2 mat-dialog-title class="flex items-center justify-between">
+  <span>批量新增工作項</span>
+  <div class="text-sm text-gray-600">
+    共 {{ getTasksFormArray().length }} 項
+    <span *ngIf="getInvalidRowsCount() > 0" class="text-red-600 ml-2">
+      ({{ getInvalidRowsCount() }} 項有錯誤)
+    </span>
+  </div>
+</h2>
+
+<mat-dialog-content class="max-h-96 overflow-y-auto p-0">
+  <form [formGroup]="bulkTaskForm">
+    <div class="overflow-x-auto">
+      <table mat-table [dataSource]="dataSource" class="w-full min-w-max">
+        
+        <!-- 所屬案件欄 -->
+        <ng-container matColumnDef="project">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold min-w-32">所屬案件 *</th>
+          <td mat-cell *matCellDef="let control; let i = index" class="p-2">
+            <mat-form-field appearance="outline" class="w-full dense-4">
+              <mat-select [formControl]="control.get('project')" (selectionChange)="onProjectChange(i)">
+                <mat-option *ngFor="let project of projects$ | async" [value]="project.project">
+                  {{ project.project }}
+                </mat-option>
+              </mat-select>
+              <mat-error>{{ getRowErrorMessage(i, 'project') }}</mat-error>
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- 系統名稱欄 -->
+        <ng-container matColumnDef="system">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold min-w-28">系統名稱</th>
+          <td mat-cell *matCellDef="let control; let i = index" class="p-2">
+            <mat-form-field appearance="outline" class="w-full dense-4">
+              <input matInput [formControl]="control.get('system')" readonly>
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- 工作項名稱欄 -->
+        <ng-container matColumnDef="task">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold min-w-40">工作項名稱 *</th>
+          <td mat-cell *matCellDef="let control; let i = index" class="p-2">
+            <mat-form-field appearance="outline" class="w-full dense-4">
+              <input matInput [formControl]="control.get('task')" placeholder="請輸入工作項名稱">
+              <mat-error>{{ getRowErrorMessage(i, 'task') }}</mat-error>
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- 負責人員欄 -->
+        <ng-container matColumnDef="member">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold min-w-28">負責人員 *</th>
+          <td mat-cell *matCellDef="let control; let i = index" class="p-2">
+            <mat-form-field appearance="outline" class="w-full dense-4">
+              <mat-select [formControl]="control.get('member')">
+                <mat-option *ngFor="let member of members$ | async" [value]="member.name">
+                  {{ member.name }}
+                </mat-option>
+              </mat-select>
+              <mat-error>{{ getRowErrorMessage(i, 'member') }}</mat-error>
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- 複雜度欄 -->
+        <ng-container matColumnDef="complexity">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold w-24">複雜度</th>
+          <td mat-cell *matCellDef="let control; let i = index" class="p-2">
+            <mat-form-field appearance="outline" class="w-full dense-4 w-24">
+              <mat-select [formControl]="control.get('complexity')">
+                <mat-option *ngFor="let option of complexityOptions" [value]="option.value">
+                  {{ option.label }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- 優先級欄 -->
+        <ng-container matColumnDef="priority">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold w-24">優先級</th>
+          <td mat-cell *matCellDef="let control; let i = index" class="p-2">
+            <mat-form-field appearance="outline" class="w-full dense-4 w-24">
+              <mat-select [formControl]="control.get('priority')">
+                <mat-option *ngFor="let option of priorityOptions" [value]="option.value">
+                  {{ option.label }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- 狀態欄 -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold w-32">狀態</th>
+          <td mat-cell *matCellDef="let control; let i = index" class="p-2">
+            <mat-form-field appearance="outline" class="w-full dense-4 w-32">
+              <mat-select [formControl]="control.get('status')" (selectionChange)="onStatusChange(i)">
+                <mat-option *ngFor="let option of statusOptions" [value]="option.value">
+                  {{ option.label }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- 開始日期欄 -->
+        <ng-container matColumnDef="startDate">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold w-40">開始日期</th>
+          <td mat-cell *matCellDef="let control; let i = index" class="p-2">
+            <mat-form-field appearance="outline" class="w-full dense-4 w-40">
+              <input matInput [matDatepicker]="startPicker" [formControl]="control.get('startDate')">
+              <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+              <mat-datepicker #startPicker></mat-datepicker>
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- 預計結束日期欄 -->
+        <ng-container matColumnDef="endDate">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold w-40">預計結束日期</th>
+          <td mat-cell *matCellDef="let control; let i = index" class="p-2">
+            <mat-form-field appearance="outline" class="w-full dense-4 w-40">
+              <input matInput [matDatepicker]="endPicker" [formControl]="control.get('endDate')">
+              <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+              <mat-datepicker #endPicker></mat-datepicker>
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- 操作欄 -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="font-semibold min-w-32">操作</th>
+          <td mat-cell *matCellDef="let control; let i = index" class="p-2">
+            <div class="flex gap-1">
+              <button 
+                mat-icon-button 
+                (click)="copyRow(i)"
+                class="w-8 h-8 text-green-600 hover:bg-green-50 flex justify-center items-center"
+                matTooltip="複製此行">
+                <mat-icon class="text-sm">content_copy</mat-icon>
+              </button>
+              <button 
+                mat-icon-button 
+                (click)="deleteRow(i)"
+                class="w-8 h-8 text-red-600 hover:bg-red-50  flex justify-center items-center"
+                matTooltip="刪除此行"
+                [disabled]="getTasksFormArray().length <= 1">
+                <mat-icon class="text-sm">delete</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns; let i = index" 
+            [class.bg-red-50]="!isRowValid(i)"></tr>
+      </table>
+    </div>
+  </form>
+  
+  <!-- 日期選擇器定義 -->
+  <mat-datepicker #startPicker></mat-datepicker>
+  <mat-datepicker #endPicker></mat-datepicker>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="p-4 border-t">
+  <div class="flex justify-between items-center w-full">
+    <button 
+      mat-stroked-button 
+      color="primary"
+      (click)="addNewRow()"
+      class="flex items-center gap-2">
+      <mat-icon>add</mat-icon>
+      新增行
+    </button>
+    
+    <div class="flex gap-2">
+      <button mat-button (click)="onCancel()">取消</button>
+      <button 
+        mat-raised-button 
+        color="primary" 
+        (click)="onSubmit()"
+        [disabled]="!bulkTaskForm.valid">
+        批量儲存 ({{ getTasksFormArray().length }} 項)
+      </button>
+    </div>
+  </div>
+</mat-dialog-actions>

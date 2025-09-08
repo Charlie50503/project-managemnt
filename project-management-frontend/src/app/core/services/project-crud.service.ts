@@ -149,6 +149,24 @@ export class ProjectCrudService {
     );
   }
 
+  createBulkTasks(tasks: Omit<Task, 'id'>[]): Observable<{results: Task[], successCount: number, failureCount: number}> {
+    return this.http.post<{results: Task[], successCount: number, failureCount: number}>(`${this.API_BASE_URL}/tasks/bulk`, tasks).pipe(
+      map(response => {
+        const currentData = this.dataSubject.value;
+        if (currentData && response.results.length > 0) {
+          // 建立新的陣列來觸發變更檢測
+          const updatedTasks = [...currentData.memberTableData, ...response.results];
+          const newData = {
+            ...currentData,
+            memberTableData: updatedTasks
+          };
+          this.dataSubject.next(newData);
+        }
+        return response;
+      })
+    );
+  }
+
   updateTask(id: number, updates: Partial<Task>): Observable<Task> {
     return this.http.put<Task>(`${this.API_BASE_URL}/tasks/${id}`, updates).pipe(
       map(updatedTask => {

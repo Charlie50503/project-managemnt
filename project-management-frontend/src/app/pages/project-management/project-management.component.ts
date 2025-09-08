@@ -19,6 +19,7 @@ import { MemberViewTabComponent } from './components/member-view-tab/member-view
 import { ProjectViewTabComponent } from './components/project-view-tab/project-view-tab.component';
 import { ProjectFormDialogComponent } from './components/project-form-dialog/project-form-dialog.component';
 import { TaskFormDialogComponent } from './components/task-form-dialog/task-form-dialog.component';
+import { BulkTaskFormDialogComponent } from './components/bulk-task-form-dialog/bulk-task-form-dialog.component';
 import { SystemFormDialogComponent } from './components/system-form-dialog/system-form-dialog.component';
 import { SystemCrudService } from './services/system-crud.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -208,6 +209,40 @@ export class ProjectManagementComponent implements OnInit {
         });
       }
     });
+  }
+
+  openBulkCreateTaskDialog(projectName?: string): void {
+    const dialogRef = this.dialog.open(BulkTaskFormDialogComponent, {
+      width: '1200px',
+      maxWidth: '95vw',
+      height: '80vh',
+      data: { projectName }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && Array.isArray(result)) {
+        // 使用批量創建 API
+        this.projectCrudService.createBulkTasks(result).subscribe({
+          next: (response) => {
+            this.showBulkCreateResult(response.successCount, response.failureCount);
+          },
+          error: (error) => {
+            console.error('Error creating bulk tasks:', error);
+            this.snackBar.open('批量新增失敗', '關閉', { duration: 3000 });
+          }
+        });
+      }
+    });
+  }
+
+  private showBulkCreateResult(successCount: number, errorCount: number): void {
+    if (errorCount === 0) {
+      this.snackBar.open(`成功新增 ${successCount} 個工作項`, '關閉', { duration: 3000 });
+    } else if (successCount === 0) {
+      this.snackBar.open(`新增失敗，共 ${errorCount} 個工作項新增失敗`, '關閉', { duration: 5000 });
+    } else {
+      this.snackBar.open(`新增完成：成功 ${successCount} 個，失敗 ${errorCount} 個`, '關閉', { duration: 5000 });
+    }
   }
 
   openEditTaskDialog(task: Task): void {

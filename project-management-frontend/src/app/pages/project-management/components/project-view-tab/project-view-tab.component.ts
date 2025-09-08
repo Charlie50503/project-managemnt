@@ -37,6 +37,7 @@ export class ProjectViewTabComponent {
   @Output() toggleRow = new EventEmitter<string>();
   @Output() editProject = new EventEmitter<any>();
   @Output() addTask = new EventEmitter<string>();
+  @Output() bulkAddTask = new EventEmitter<string>();
   @Output() editTask = new EventEmitter<any>();
   @Output() copyTask = new EventEmitter<any>();
   @Output() deleteTask = new EventEmitter<any>();
@@ -106,6 +107,10 @@ export class ProjectViewTabComponent {
 
   onAddTask(projectName: string): void {
     this.addTask.emit(projectName);
+  }
+
+  onBulkAddTask(projectName: string): void {
+    this.bulkAddTask.emit(projectName);
   }
 
   onEditTask(task: any): void {

@@ -6,7 +6,7 @@ const db = require('../database/db');
 router.get('/', (req, res) => {
   try {
     const tasks = db.all('SELECT * FROM tasks ORDER BY created_at DESC');
-    
+
     // 轉換資料格式以符合前端期望
     const formattedTasks = tasks.map(task => ({
       id: task.id,
@@ -21,7 +21,7 @@ router.get('/', (req, res) => {
       endDate: task.end_date,
       actualEndDate: task.actual_end_date
     }));
-    
+
     res.json(formattedTasks);
   } catch (error) {
     console.error('Error fetching tasks:', error);
@@ -33,11 +33,11 @@ router.get('/', (req, res) => {
 router.get('/:id', (req, res) => {
   try {
     const task = db.get('SELECT * FROM tasks WHERE id = ?', [req.params.id]);
-    
+
     if (!task) {
       return res.status(404).json({ error: 'Task not found' });
     }
-    
+
     const formattedTask = {
       id: task.id,
       member: task.member,
@@ -51,7 +51,7 @@ router.get('/:id', (req, res) => {
       endDate: task.end_date,
       actualEndDate: task.actual_end_date
     };
-    
+
     res.json(formattedTask);
   } catch (error) {
     console.error('Error fetching task:', error);
@@ -64,7 +64,7 @@ router.get('/project/:projectName', (req, res) => {
   try {
     const projectName = decodeURIComponent(req.params.projectName);
     const tasks = db.all('SELECT * FROM tasks WHERE project = ? ORDER BY created_at DESC', [projectName]);
-    
+
     const formattedTasks = tasks.map(task => ({
       id: task.id,
       member: task.member,
@@ -78,7 +78,7 @@ router.get('/project/:projectName', (req, res) => {
       endDate: task.end_date,
       actualEndDate: task.actual_end_date
     }));
-    
+
     res.json(formattedTasks);
   } catch (error) {
     console.error('Error fetching tasks by project:', error);
@@ -86,59 +86,165 @@ router.get('/project/:projectName', (req, res) => {
   }
 });
 
-// POST /api/tasks - 新增任務
-router.post('/', (req, res) => {
+// POST /api/tasks/bulk - 批量新增任務
+router.post('/bulk', (req, res) => {
   try {
-    console.log('Received task creation request:', req.body);
-    
-    const { 
-      member, project, system, task, complexity, priority, 
-      status, startDate, endDate, actualEndDate 
-    } = req.body;
-    
-    // 驗證必要欄位
-    if (!member || !project || !system || !task || !complexity || !priority) {
-      console.log('Missing required fields:', { member, project, system, task, complexity, priority });
-      return res.status(400).json({ 
-        error: 'Required fields: member, project, system, task, complexity, priority' 
-      });
+    console.log('Received bulk task creation request:');
+    console.log('Request body type:', typeof req.body);
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('Is array:', Array.isArray(req.body));
+    console.log('Length:', req.body?.length);
+
+    const tasks = req.body;
+
+    if (!Array.isArray(tasks) || tasks.length === 0) {
+      console.log('Validation failed: tasks is not array or empty');
+      return res.status(400).json({ error: 'Tasks array is required and cannot be empty' });
     }
-    
+
+    let successCount = 0;
+    let failureCount = 0;
+    const results = [];
+
     // 驗證枚舉值
     const validComplexity = ['高', '中', '低'];
     const validPriority = ['高', '中', '低'];
     const validStatus = ['not-started', 'in-progress', 'completed'];
-    
+
+    for (const taskData of tasks) {
+      try {
+        const {
+          member, project, system, task, complexity, priority,
+          status, startDate, endDate, actualEndDate
+        } = taskData;
+
+        // 驗證必要欄位
+        if (!member || !project || !system || !task || !complexity || !priority) {
+          console.log('Missing required fields for task:', taskData);
+          failureCount++;
+          continue;
+        }
+
+        // 驗證枚舉值
+        if (!validComplexity.includes(complexity)) {
+          console.log('Invalid complexity for task:', taskData);
+          failureCount++;
+          continue;
+        }
+
+        if (!validPriority.includes(priority)) {
+          console.log('Invalid priority for task:', taskData);
+          failureCount++;
+          continue;
+        }
+
+        if (status && !validStatus.includes(status)) {
+          console.log('Invalid status for task:', taskData);
+          failureCount++;
+          continue;
+        }
+
+        const result = db.run(
+          `INSERT INTO tasks (
+            member, project, system, task, complexity, priority, status,
+            start_date, end_date, actual_end_date
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            member, project, system, task, complexity, priority,
+            status || 'not-started', startDate || null, endDate || null, actualEndDate || null
+          ]
+        );
+
+        results.push({
+          id: result.id,
+          member,
+          project,
+          system,
+          task,
+          complexity,
+          priority,
+          status: status || 'not-started',
+          startDate: startDate || null,
+          endDate: endDate || null,
+          actualEndDate: actualEndDate || null
+        });
+
+        successCount++;
+      } catch (error) {
+        console.error('Error inserting individual task:', error);
+        console.error('Task data that failed:', taskData);
+        failureCount++;
+      }
+    }
+
+    console.log(`Bulk insert completed: ${successCount} success, ${failureCount} failures`);
+
+    res.status(201).json({
+      message: 'Bulk task creation completed',
+      successCount,
+      failureCount,
+      totalCount: tasks.length,
+      results
+    });
+  } catch (error) {
+    console.error('Error creating bulk tasks:', error);
+    res.status(500).json({ error: 'Failed to create bulk tasks' });
+  }
+});
+
+// POST /api/tasks - 新增任務
+router.post('/', (req, res) => {
+  try {
+    console.log('Received task creation request:', req.body);
+
+    const {
+      member, project, system, task, complexity, priority,
+      status, startDate, endDate, actualEndDate
+    } = req.body;
+
+    // 驗證必要欄位
+    if (!member || !project || !system || !task || !complexity || !priority) {
+      console.log('Missing required fields:', { member, project, system, task, complexity, priority });
+      return res.status(400).json({
+        error: 'Required fields: member, project, system, task, complexity, priority'
+      });
+    }
+
+    // 驗證枚舉值
+    const validComplexity = ['高', '中', '低'];
+    const validPriority = ['高', '中', '低'];
+    const validStatus = ['not-started', 'in-progress', 'completed'];
+
     if (!validComplexity.includes(complexity)) {
       return res.status(400).json({ error: 'Invalid complexity. Must be one of: 高, 中, 低' });
     }
-    
+
     if (!validPriority.includes(priority)) {
       return res.status(400).json({ error: 'Invalid priority. Must be one of: 高, 中, 低' });
     }
-    
+
     if (status && !validStatus.includes(status)) {
       return res.status(400).json({ error: 'Invalid status. Must be one of: not-started, in-progress, completed' });
     }
-    
+
     console.log('Inserting task with params:', [
-      member, project, system, task, complexity, priority, 
+      member, project, system, task, complexity, priority,
       status || 'not-started', startDate, endDate, actualEndDate || null
     ]);
-    
+
     const result = db.run(
       `INSERT INTO tasks (
         member, project, system, task, complexity, priority, status,
         start_date, end_date, actual_end_date
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        member, project, system, task, complexity, priority, 
+        member, project, system, task, complexity, priority,
         status || 'not-started', startDate, endDate, actualEndDate || null
       ]
     );
-    
+
     console.log('Insert result:', result);
-    
+
     const newTask = {
       id: result.id,
       member,
@@ -152,7 +258,7 @@ router.post('/', (req, res) => {
       endDate,
       actualEndDate: actualEndDate || null
     };
-    
+
     console.log('Returning new task:', newTask);
     res.status(201).json(newTask);
   } catch (error) {
@@ -166,32 +272,32 @@ router.put('/:id', (req, res) => {
   try {
     const taskId = req.params.id;
     const updates = req.body;
-    
+
     // 檢查任務是否存在
     const existingTask = db.get('SELECT * FROM tasks WHERE id = ?', [taskId]);
     if (!existingTask) {
       return res.status(404).json({ error: 'Task not found' });
     }
-    
+
     // 驗證枚舉值（如果有提供）
     const validComplexity = ['高', '中', '低'];
     const validPriority = ['高', '中', '低'];
     const validStatus = ['not-started', 'in-progress', 'completed'];
-    
+
     if (updates.complexity && !validComplexity.includes(updates.complexity)) {
       return res.status(400).json({ error: 'Invalid complexity. Must be one of: 高, 中, 低' });
     }
-    
+
     if (updates.priority && !validPriority.includes(updates.priority)) {
       return res.status(400).json({ error: 'Invalid priority. Must be one of: 高, 中, 低' });
     }
-    
+
     if (updates.status && !validStatus.includes(updates.status)) {
       return res.status(400).json({ error: 'Invalid status. Must be one of: not-started, in-progress, completed' });
     }
-    
+
     const updatedAt = new Date().toISOString();
-    
+
     db.run(
       `UPDATE tasks SET 
        member = ?, project = ?, system = ?, task = ?, complexity = ?,
@@ -213,9 +319,9 @@ router.put('/:id', (req, res) => {
         taskId
       ]
     );
-    
+
     const updatedTask = db.get('SELECT * FROM tasks WHERE id = ?', [taskId]);
-    
+
     const formattedTask = {
       id: updatedTask.id,
       member: updatedTask.member,
@@ -229,7 +335,7 @@ router.put('/:id', (req, res) => {
       endDate: updatedTask.end_date,
       actualEndDate: updatedTask.actual_end_date
     };
-    
+
     res.json(formattedTask);
   } catch (error) {
     console.error('Error updating task:', error);
@@ -241,13 +347,13 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   try {
     const taskId = req.params.id;
-    
+
     const result = db.run('DELETE FROM tasks WHERE id = ?', [taskId]);
-    
+
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Task not found' });
     }
-    
+
     res.json({ message: 'Task deleted successfully' });
   } catch (error) {
     console.error('Error deleting task:', error);

@@ -33,6 +33,14 @@
             新增工作項
           </button>
           <button 
+            mat-stroked-button 
+            color="accent"
+            (click)="openBulkCreateTaskDialog()"
+            class="flex items-center gap-2">
+            <mat-icon>playlist_add</mat-icon>
+            批量新增工作項
+          </button>
+          <button 
             mat-button 
             (click)="exportToExcel()"
             class="flex items-center gap-2">
@@ -114,6 +122,7 @@
             (toggleRow)="toggleRow($event)"
             (editProject)="openEditProjectDialog($event)"
             (addTask)="openCreateTaskDialog($event)"
+            (bulkAddTask)="openBulkCreateTaskDialog($event)"
             (editTask)="openEditTaskDialog($event)"
             (copyTask)="openCopyTaskDialog($event)"
             (deleteTask)="openDeleteTaskDialog($event)">

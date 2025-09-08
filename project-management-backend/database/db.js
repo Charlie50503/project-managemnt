@@ -67,26 +67,103 @@ class DatabaseWrapper {
       )
     `);
 
-    // 建立 tasks 表
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS tasks (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        member TEXT NOT NULL,
-        project TEXT NOT NULL,
-        system TEXT NOT NULL,
-        task TEXT NOT NULL,
-        complexity TEXT CHECK(complexity IN ('高', '中', '低')) NOT NULL,
-        priority TEXT CHECK(priority IN ('高', '中', '低')) NOT NULL,
-        status TEXT CHECK(status IN ('not-started', 'in-progress', 'completed')) DEFAULT 'not-started',
-        start_date TEXT NOT NULL,
-        end_date TEXT NOT NULL,
-        actual_end_date TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+    // 檢查並更新 tasks 表結構
+    this.updateTasksTableSchema();
+  }
 
-    console.log('Database tables initialized');
+  updateTasksTableSchema() {
+    try {
+      // 檢查 tasks 表是否存在以及其結構
+      const tableInfo = this.db.prepare("PRAGMA table_info(tasks)").all();
+      
+      if (tableInfo.length === 0) {
+        // 表不存在，創建新表
+        this.db.exec(`
+          CREATE TABLE tasks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            member TEXT NOT NULL,
+            project TEXT NOT NULL,
+            system TEXT NOT NULL,
+            task TEXT NOT NULL,
+            complexity TEXT CHECK(complexity IN ('高', '中', '低')) NOT NULL,
+            priority TEXT CHECK(priority IN ('高', '中', '低')) NOT NULL,
+            status TEXT CHECK(status IN ('not-started', 'in-progress', 'completed')) DEFAULT 'not-started',
+            start_date TEXT,
+            end_date TEXT,
+            actual_end_date TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+        console.log('Created new tasks table with correct schema');
+      } else {
+        // 檢查 start_date 和 end_date 是否為 NOT NULL
+        const startDateColumn = tableInfo.find(col => col.name === 'start_date');
+        const endDateColumn = tableInfo.find(col => col.name === 'end_date');
+        
+        if (startDateColumn && startDateColumn.notnull === 1) {
+          // 需要更新表結構，備份數據並重建表
+          console.log('Updating tasks table schema to allow null dates...');
+          
+          // 備份現有數據
+          this.db.exec(`
+            CREATE TABLE tasks_backup AS SELECT * FROM tasks
+          `);
+          
+          // 刪除舊表
+          this.db.exec(`DROP TABLE tasks`);
+          
+          // 創建新表
+          this.db.exec(`
+            CREATE TABLE tasks (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              member TEXT NOT NULL,
+              project TEXT NOT NULL,
+              system TEXT NOT NULL,
+              task TEXT NOT NULL,
+              complexity TEXT CHECK(complexity IN ('高', '中', '低')) NOT NULL,
+              priority TEXT CHECK(priority IN ('高', '中', '低')) NOT NULL,
+              status TEXT CHECK(status IN ('not-started', 'in-progress', 'completed')) DEFAULT 'not-started',
+              start_date TEXT,
+              end_date TEXT,
+              actual_end_date TEXT,
+              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+          `);
+          
+          // 恢復數據
+          this.db.exec(`
+            INSERT INTO tasks SELECT * FROM tasks_backup
+          `);
+          
+          // 刪除備份表
+          this.db.exec(`DROP TABLE tasks_backup`);
+          
+          console.log('Tasks table schema updated successfully');
+        }
+      }
+    } catch (error) {
+      console.error('Error updating tasks table schema:', error);
+      // 如果更新失敗，確保至少有基本表結構
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS tasks (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          member TEXT NOT NULL,
+          project TEXT NOT NULL,
+          system TEXT NOT NULL,
+          task TEXT NOT NULL,
+          complexity TEXT CHECK(complexity IN ('高', '中', '低')) NOT NULL,
+          priority TEXT CHECK(priority IN ('高', '中', '低')) NOT NULL,
+          status TEXT CHECK(status IN ('not-started', 'in-progress', 'completed')) DEFAULT 'not-started',
+          start_date TEXT,
+          end_date TEXT,
+          actual_end_date TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+    }
   }
 
   // 通用查詢方法

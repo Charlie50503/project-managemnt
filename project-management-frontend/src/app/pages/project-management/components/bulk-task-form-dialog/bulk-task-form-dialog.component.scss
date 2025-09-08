@@ -1,0 +1,68 @@
+.mat-mdc-table {
+  background: transparent;
+}
+
+.mat-mdc-header-row {
+  background-color: #f8f9fa;
+}
+
+.mat-mdc-row {
+  &.bg-red-50 {
+    background-color: #fef2f2;
+  }
+  
+  &:hover {
+    background-color: #f9fafb;
+  }
+}
+
+.mat-mdc-cell, .mat-mdc-header-cell {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 8px;
+}
+
+.mat-mdc-form-field {
+  .mat-mdc-text-field-wrapper {
+    padding: 0;
+  }
+  
+  .mat-mdc-form-field-subscript-wrapper {
+    margin-top: 4px;
+  }
+}
+
+// 確保表格在小螢幕上可以水平滾動
+.overflow-x-auto {
+  min-width: 100%;
+}
+
+// 調整對話框內容的間距
+mat-dialog-content {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+// 固定表頭樣式
+.mat-mdc-header-row {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+// 調整按鈕大小
+.mat-mdc-icon-button {
+  width: 32px;
+  height: 32px;
+  
+  .mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+// 錯誤行的樣式
+.bg-red-50 {
+  border-left: 3px solid #ef4444;
+}
