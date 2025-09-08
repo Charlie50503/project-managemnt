@@ -233,6 +233,7 @@ export class BulkTaskFormDialogComponent implements OnInit {
   private formatDate(date: Date | string): string {
     if (!date) return '';
     if (typeof date === 'string') return date;
+    if (isNaN(date.getTime())) return '';
     return date.toISOString().split('T')[0];
   }
 

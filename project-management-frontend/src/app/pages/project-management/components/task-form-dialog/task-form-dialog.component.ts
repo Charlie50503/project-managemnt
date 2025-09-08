@@ -110,7 +110,11 @@ export class TaskFormDialogComponent implements OnInit {
     const startDate = form.get('startDate')?.value;
     const endDate = form.get('endDate')?.value;
     
-    if (startDate && endDate && new Date(startDate) >= new Date(endDate)) {
+    // 只有當兩個日期都有值且都是有效日期時才進行比較
+    if (startDate && endDate && 
+        startDate instanceof Date && endDate instanceof Date &&
+        !isNaN(startDate.getTime()) && !isNaN(endDate.getTime()) &&
+        startDate >= endDate) {
       return { dateInvalid: true };
     }
     return null;
@@ -125,10 +129,24 @@ export class TaskFormDialogComponent implements OnInit {
       complexity: task.complexity,
       priority: task.priority,
       status: task.status,
-      startDate: new Date(task.startDate),
-      endDate: new Date(task.endDate),
-      actualEndDate: task.actualEndDate ? new Date(task.actualEndDate) : null
+      startDate: this.parseDate(task.startDate),
+      endDate: this.parseDate(task.endDate),
+      actualEndDate: task.actualEndDate ? this.parseDate(task.actualEndDate) : null
     });
+  }
+
+  private parseDate(dateString: string | null | undefined): Date | null {
+    if (!dateString || dateString.trim() === '') {
+      return null;
+    }
+    
+    const date = new Date(dateString);
+    // 檢查日期是否有效
+    if (isNaN(date.getTime())) {
+      return null;
+    }
+    
+    return date;
   }
 
   onProjectChange(): void {
@@ -176,8 +194,8 @@ export class TaskFormDialogComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  private formatDate(date: Date): string {
-    if (!date) return '';
+  private formatDate(date: Date | null): string {
+    if (!date || isNaN(date.getTime())) return '';
     return date.toISOString().split('T')[0];
   }
 

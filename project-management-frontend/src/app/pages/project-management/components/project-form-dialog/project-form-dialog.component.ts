@@ -95,7 +95,11 @@ export class ProjectFormDialogComponent implements OnInit {
     const startDate = form.get('startDate')?.value;
     const endDate = form.get('expectedEndDate')?.value;
     
-    if (startDate && endDate && new Date(startDate) >= new Date(endDate)) {
+    // 只有當兩個日期都有值且都是有效日期時才進行比較
+    if (startDate && endDate && 
+        startDate instanceof Date && endDate instanceof Date &&
+        !isNaN(startDate.getTime()) && !isNaN(endDate.getTime()) &&
+        startDate >= endDate) {
       return { dateInvalid: true };
     }
     return null;
@@ -108,11 +112,25 @@ export class ProjectFormDialogComponent implements OnInit {
       project: project.project,
       system: project.system,
       projectManager: project.projectManager,
-      startDate: new Date(project.startDate),
-      expectedEndDate: new Date(project.expectedEndDate),
+      startDate: this.parseDate(project.startDate),
+      expectedEndDate: this.parseDate(project.expectedEndDate),
       demo: project.demo || '',
       status: project.status
     });
+  }
+
+  private parseDate(dateString: string | null | undefined): Date | null {
+    if (!dateString || dateString.trim() === '') {
+      return null;
+    }
+    
+    const date = new Date(dateString);
+    // 檢查日期是否有效
+    if (isNaN(date.getTime())) {
+      return null;
+    }
+    
+    return date;
   }
 
 
@@ -147,8 +165,8 @@ export class ProjectFormDialogComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  private formatDate(date: Date): string {
-    if (!date) return '';
+  private formatDate(date: Date | null): string {
+    if (!date || isNaN(date.getTime())) return '';
     return date.toISOString().split('T')[0];
   }
 
