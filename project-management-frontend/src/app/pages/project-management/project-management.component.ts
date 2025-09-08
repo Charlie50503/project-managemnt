@@ -10,9 +10,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatMenuModule } from '@angular/material/menu';
 import { ProjectDataService } from '../../core/services/project-data.service';
 import { ProjectCrudService } from '../../core/services/project-crud.service';
 import { StatusHelperService } from '../../shared/services/status-helper.service';
+import { ExcelExportService } from '../../shared/services/excel-export.service';
 import { GroupedMemberData, GroupedProjectData, Project, Task } from '../../shared/models/project.model';
 import { OverviewTabComponent } from './components/overview-tab/overview-tab.component';
 import { MemberViewTabComponent } from './components/member-view-tab/member-view-tab.component';
@@ -39,6 +41,7 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
     MatSelectModule,
     MatDialogModule,
     MatSnackBarModule,
+    MatMenuModule,
     OverviewTabComponent,
     MemberViewTabComponent,
     ProjectViewTabComponent
@@ -61,7 +64,8 @@ export class ProjectManagementComponent implements OnInit {
     public statusHelper: StatusHelperService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private systemCrudService: SystemCrudService
+    private systemCrudService: SystemCrudService,
+    private excelExportService: ExcelExportService
   ) {
     this.groupedMemberData$ = this.projectDataService.getGroupedMemberData();
     this.groupedProjectData$ = this.projectDataService.getGroupedProjectData();
@@ -105,8 +109,68 @@ export class ProjectManagementComponent implements OnInit {
   }
 
   exportToExcel(): void {
-    // TODO: 實現 Excel 匯出功能
-    console.log('Export to Excel');
+    // 獲取當前的專案和工作項資料
+    this.projectCrudService.getProjects().subscribe(projects => {
+      this.projectCrudService.getTasks().subscribe(tasks => {
+        if (tasks.length === 0) {
+          this.snackBar.open('沒有工作項資料可以匯出', '關閉', { duration: 3000 });
+          return;
+        }
+
+        try {
+          // 匯出完整報告（包含專案摘要和工作項詳細）
+          this.excelExportService.exportFullReportToExcel(projects, tasks);
+          this.snackBar.open('Excel 檔案匯出成功', '關閉', { duration: 3000 });
+        } catch (error) {
+          console.error('Excel 匯出失敗:', error);
+          this.snackBar.open('Excel 匯出失敗', '關閉', { duration: 3000 });
+        }
+      });
+    });
+  }
+
+  /**
+   * 匯出工作項清單
+   */
+  exportTasksOnly(): void {
+    this.projectCrudService.getProjects().subscribe(projects => {
+      this.projectCrudService.getTasks().subscribe(tasks => {
+        if (tasks.length === 0) {
+          this.snackBar.open('沒有工作項資料可以匯出', '關閉', { duration: 3000 });
+          return;
+        }
+
+        try {
+          this.excelExportService.exportTasksToExcel(tasks, projects);
+          this.snackBar.open('工作項清單匯出成功', '關閉', { duration: 3000 });
+        } catch (error) {
+          console.error('工作項清單匯出失敗:', error);
+          this.snackBar.open('工作項清單匯出失敗', '關閉', { duration: 3000 });
+        }
+      });
+    });
+  }
+
+  /**
+   * 匯出專案摘要
+   */
+  exportProjectSummary(): void {
+    this.projectCrudService.getProjects().subscribe(projects => {
+      this.projectCrudService.getTasks().subscribe(tasks => {
+        if (projects.length === 0) {
+          this.snackBar.open('沒有專案資料可以匯出', '關閉', { duration: 3000 });
+          return;
+        }
+
+        try {
+          this.excelExportService.exportProjectSummaryToExcel(projects, tasks);
+          this.snackBar.open('專案摘要匯出成功', '關閉', { duration: 3000 });
+        } catch (error) {
+          console.error('專案摘要匯出失敗:', error);
+          this.snackBar.open('專案摘要匯出失敗', '關閉', { duration: 3000 });
+        }
+      });
+    });
   }
 
   filterMemberData(data: GroupedMemberData[]): GroupedMemberData[] {

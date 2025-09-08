@@ -40,13 +40,28 @@
             <mat-icon>playlist_add</mat-icon>
             批量新增工作項
           </button>
+          <!-- 匯出選單 -->
           <button 
             mat-button 
-            (click)="exportToExcel()"
+            [matMenuTriggerFor]="exportMenu"
             class="flex items-center gap-2">
-            <mat-icon>download</mat-icon>
             匯出 Excel
+            <mat-icon>arrow_drop_down</mat-icon>
           </button>
+          <mat-menu #exportMenu="matMenu">
+            <button mat-menu-item (click)="exportToExcel()">
+              <mat-icon>description</mat-icon>
+              <span>完整報告</span>
+            </button>
+            <button mat-menu-item (click)="exportTasksOnly()">
+              <mat-icon>assignment</mat-icon>
+              <span>工作項清單</span>
+            </button>
+            <button mat-menu-item (click)="exportProjectSummary()">
+              <mat-icon>summarize</mat-icon>
+              <span>專案摘要</span>
+            </button>
+          </mat-menu>
         </div>
       </div>
 
