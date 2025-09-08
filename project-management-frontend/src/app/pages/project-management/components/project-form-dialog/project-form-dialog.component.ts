@@ -75,7 +75,21 @@ export class ProjectFormDialogComponent implements OnInit {
   ngOnInit(): void {
     if (this.data.isEdit && this.data.project) {
       this.populateForm(this.data.project);
+    } else {
+      // 新增模式：設定預設的排序順序為當前最大值 + 1
+      this.setDefaultSortOrder();
     }
+  }
+
+  private setDefaultSortOrder(): void {
+    this.projectCrudService.getProjects().subscribe(projects => {
+      if (projects.length > 0) {
+        const maxSortOrder = Math.max(...projects.map(p => p.sortOrder || 0));
+        this.projectForm.patchValue({ sortOrder: maxSortOrder + 1 });
+      } else {
+        this.projectForm.patchValue({ sortOrder: 0 });
+      }
+    });
   }
 
   private createForm(): FormGroup {

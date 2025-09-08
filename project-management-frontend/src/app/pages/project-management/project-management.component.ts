@@ -220,7 +220,7 @@ export class ProjectManagementComponent implements OnInit {
         this.projectCrudService.createProject(result).subscribe({
           next: (project) => {
             this.snackBar.open('案件新增成功', '關閉', { duration: 3000 });
-            // 資料已由 CRUD 服務更新，無需額外刷新
+            this.refreshData(); // 刷新頁面資料
           },
           error: (error) => {
             this.snackBar.open('案件新增失敗', '關閉', { duration: 3000 });
@@ -242,7 +242,7 @@ export class ProjectManagementComponent implements OnInit {
         this.projectCrudService.updateProject(project.id, result).subscribe({
           next: (updatedProject) => {
             this.snackBar.open('案件更新成功', '關閉', { duration: 3000 });
-            // 資料已由 CRUD 服務更新，無需額外刷新
+            this.refreshData(); // 刷新頁面資料
           },
           error: (error) => {
             this.snackBar.open('案件更新失敗', '關閉', { duration: 3000 });
@@ -498,10 +498,12 @@ export class ProjectManagementComponent implements OnInit {
   private handleUpdateComplete(successCount: number, errorCount: number): void {
     if (errorCount === 0) {
       this.snackBar.open('專案排序更新成功', '關閉', { duration: 3000 });
+      this.refreshData(); // 刷新頁面資料以反映新的排序
     } else if (successCount === 0) {
       this.snackBar.open('專案排序更新失敗', '關閉', { duration: 3000 });
     } else {
       this.snackBar.open(`專案排序更新完成：成功 ${successCount} 個，失敗 ${errorCount} 個`, '關閉', { duration: 5000 });
+      this.refreshData(); // 刷新頁面資料以反映新的排序
     }
   }
 

@@ -15,7 +15,15 @@ export class ProjectCrudService {
   public data$ = this.dataSubject.asObservable();
   public members$ = this.membersSubject.asObservable();
   public projects$ = this.data$.pipe(
-    map(data => data?.projectTableData || [])
+    map(data => {
+      if (!data?.projectTableData) return [];
+      // 按照 sortOrder 排序，如果沒有 sortOrder 則放到最後
+      return [...data.projectTableData].sort((a, b) => {
+        const aOrder = a.sortOrder ?? Number.MAX_SAFE_INTEGER;
+        const bOrder = b.sortOrder ?? Number.MAX_SAFE_INTEGER;
+        return aOrder - bOrder;
+      });
+    })
   );
 
   constructor(private http: HttpClient) {
@@ -221,7 +229,15 @@ export class ProjectCrudService {
   // 取得案件列表
   getProjects(): Observable<Project[]> {
     return this.data$.pipe(
-      map(data => data?.projectTableData || [])
+      map(data => {
+        if (!data?.projectTableData) return [];
+        // 按照 sortOrder 排序，如果沒有 sortOrder 則放到最後
+        return [...data.projectTableData].sort((a, b) => {
+          const aOrder = a.sortOrder ?? Number.MAX_SAFE_INTEGER;
+          const bOrder = b.sortOrder ?? Number.MAX_SAFE_INTEGER;
+          return aOrder - bOrder;
+        });
+      })
     );
   }
 

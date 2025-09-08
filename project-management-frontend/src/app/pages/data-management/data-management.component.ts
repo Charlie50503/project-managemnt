@@ -212,6 +212,8 @@ export class DataManagementComponent implements OnInit {
         this.projectCrudService.createProject(result).subscribe({
           next: () => {
             this.snackBar.open('案件新增成功', '關閉', { duration: 3000 });
+            // 刷新資料以確保排序正確
+            this.refreshData();
           },
           error: (error) => {
             this.snackBar.open('案件新增失敗', '關閉', { duration: 3000 });
@@ -233,6 +235,8 @@ export class DataManagementComponent implements OnInit {
         this.projectCrudService.updateProject(project.id, result).subscribe({
           next: () => {
             this.snackBar.open('案件更新成功', '關閉', { duration: 3000 });
+            // 刷新資料以確保排序正確
+            this.refreshData();
           },
           error: (error) => {
             this.snackBar.open('案件更新失敗', '關閉', { duration: 3000 });
@@ -287,6 +291,8 @@ export class DataManagementComponent implements OnInit {
       this.projectCrudService.deleteProject(project.id).subscribe({
         next: () => {
           this.snackBar.open('案件刪除成功', '關閉', { duration: 3000 });
+          // 刷新資料以確保排序正確
+          this.refreshData();
         },
         error: (error) => {
           this.snackBar.open('案件刪除失敗', '關閉', { duration: 3000 });
@@ -360,8 +366,7 @@ export class DataManagementComponent implements OnInit {
   }
 
   private refreshData(): void {
-    // 資料已由各自的 CRUD 服務自動更新，無需手動刷新
-    // this.memberCrudService, this.systemCrudService, this.projectCrudService 都使用 BehaviorSubject
-    // 會自動通知所有訂閱者資料變更
+    // 刷新所有資料以確保排序正確
+    this.projectCrudService.refreshData();
   }
 }
