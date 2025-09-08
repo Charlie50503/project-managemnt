@@ -78,53 +78,58 @@
             [class.expanded-detail-wrapper-expanded]="isRowExpanded(getRowKey(group))">
             <div class="expanded-detail">
               <div class="p-4 bg-blue-25 border-l-4 border-blue-200">
-                <h4 class="font-medium text-gray-800 mb-3">任務詳情</h4>
-                <div class="space-y-3">
-                  <div *ngFor="let task of group.tasks" class="border-b border-gray-200 pb-3 last:border-b-0">
-                    <div class="grid grid-cols-1 md:grid-cols-7 gap-4 items-center">
-                      <!-- 案件名稱 -->
-                      <div class="font-medium text-gray-800">{{ task.project }}</div>
+                <h4 class="font-medium text-gray-800 mb-3">人員任務詳情 - 按案件分組</h4>
+                <div class="space-y-4">
+                  <div *ngFor="let projectGroup of getTasksByProject(group.tasks)" class="border border-gray-200 rounded-lg p-3">
+                    <div class="mb-2">
+                      <h5 class="font-medium text-gray-700">{{ projectGroup.project }}</h5>
+                      <div class="text-xs text-gray-500">{{ projectGroup.system }}</div>
+                    </div>
 
-                      <!-- 系統名稱 -->
-                      <div class="text-sm text-gray-600">{{ task.system }}</div>
+                    <div class="space-y-2">
+                      <div *ngFor="let task of projectGroup.tasks"
+                        class="grid grid-cols-1 md:grid-cols-7 gap-2 items-center p-2 bg-gray-50 rounded">
+                        <!-- 案件名稱 -->
+                        <div class="font-medium text-sm">{{ task.project }}</div>
 
-                      <!-- 項目名稱 -->
-                      <div class="font-medium text-gray-700">{{ task.task }}</div>
+                        <!-- 項目名稱 -->
+                        <div class="font-medium text-sm">{{ task.task }}</div>
 
-                      <!-- 項目狀態 -->
-                      <mat-chip [ngClass]="statusHelper.getStatusColor(task.status)" class="text-xs">
-                        {{ statusHelper.getStatusText(task.status) }}
-                      </mat-chip>
+                        <!-- 項目狀態 -->
+                        <mat-chip [ngClass]="statusHelper.getStatusColor(task.status)" class="text-xs">
+                          {{ statusHelper.getStatusText(task.status) }}
+                        </mat-chip>
 
-                      <!-- 複雜度 -->
-                      <mat-chip [ngClass]="statusHelper.getComplexityColor(task.complexity)" class="text-xs">
-                        {{ task.complexity }}
-                      </mat-chip>
+                        <!-- 複雜度 -->
+                        <mat-chip [ngClass]="statusHelper.getComplexityColor(task.complexity)" class="text-xs">
+                          {{ task.complexity }}
+                        </mat-chip>
 
-                      <!-- 優先度 -->
-                      <mat-chip [ngClass]="statusHelper.getPriorityColor(task.priority)" class="text-xs">
-                        {{ task.priority }}
-                      </mat-chip>
+                        <!-- 優先度 -->
+                        <mat-chip [ngClass]="statusHelper.getPriorityColor(task.priority)" class="text-xs">
+                          {{ task.priority }}
+                        </mat-chip>
 
-                      <!-- 開始日~預計完成日 -->
-                      <div class="text-xs text-gray-600">
-                        {{ task.startDate }} ~ {{ task.endDate }}
-                      </div>
+                        <!-- 開始日~預計完成日 -->
+                        <div class="text-xs text-gray-600">
+                          {{ task.startDate }} ~ {{ task.endDate }}
+                        </div>
 
-                      <!-- 操作按鈕 -->
-                      <div class="flex justify-end gap-1">
-                        <button mat-icon-button (click)="onCopyTask(task); $event.stopPropagation()"
-                          class="text-green-600 hover:bg-green-50" matTooltip="複製項目">
-                          <mat-icon class="text-sm">content_copy</mat-icon>
-                        </button>
-                        <button mat-icon-button (click)="onEditTask(task); $event.stopPropagation()"
-                          class="text-blue-600 hover:bg-blue-50" matTooltip="編輯項目">
-                          <mat-icon class="text-sm">edit</mat-icon>
-                        </button>
-                        <button mat-icon-button (click)="onDeleteTask(task); $event.stopPropagation()"
-                          class="text-red-600 hover:bg-red-50" matTooltip="刪除項目">
-                          <mat-icon class="text-sm">delete</mat-icon>
-                        </button>
+                        <!-- 操作按鈕 -->
+                        <div class="flex justify-end gap-1">
+                          <button mat-icon-button (click)="onCopyTask(task)" class="text-green-600 hover:bg-green-50"
+                            matTooltip="複製項目">
+                            <mat-icon class="text-xs">content_copy</mat-icon>
+                          </button>
+                          <button mat-icon-button (click)="onEditTask(task)" class="text-blue-600 hover:bg-blue-50"
+                            matTooltip="編輯項目">
+                            <mat-icon class="text-xs">edit</mat-icon>
+                          </button>
+                          <button mat-icon-button (click)="onDeleteTask(task)" class="text-red-600 hover:bg-red-50"
+                            matTooltip="刪除項目">
+                            <mat-icon class="text-xs">delete</mat-icon>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

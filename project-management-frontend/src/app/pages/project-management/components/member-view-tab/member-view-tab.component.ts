@@ -114,6 +114,29 @@ export class MemberViewTabComponent {
     return `${minStart.toLocaleDateString('zh-TW')} ~ ${maxEnd.toLocaleDateString('zh-TW')}`;
   }
 
+  getTasksByProject(tasks: any[]): any[] {
+    if (!tasks || tasks.length === 0) return [];
+    
+    // 按案件分組
+    const projectGroups = tasks.reduce((groups: any, task: any) => {
+      const projectKey = task.project;
+      if (!groups[projectKey]) {
+        groups[projectKey] = {
+          project: task.project,
+          system: task.system,
+          tasks: []
+        };
+      }
+      groups[projectKey].tasks.push(task);
+      return groups;
+    }, {});
+    
+    // 轉換為陣列並排序
+    return Object.values(projectGroups).sort((a: any, b: any) => 
+      a.project.localeCompare(b.project, 'zh-TW')
+    );
+  }
+
   onEditTask(task: any): void {
     this.editTask.emit(task);
   }
