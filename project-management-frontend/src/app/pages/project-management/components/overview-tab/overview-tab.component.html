@@ -1,6 +1,6 @@
 <div class="space-y-6">
   <!-- 快速統計 -->
-  <div class="grid grid-cols-1 md:grid-cols-5 gap-4" *ngIf="overviewStats$ | async as stats">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4" *ngIf="overviewStats$ | async as stats">
     <mat-card class="text-center">
       <mat-card-content>
         <div class="text-2xl font-bold text-blue-600">{{ stats.totalProjects }}</div>
@@ -29,12 +29,6 @@
       </mat-card-content>
     </mat-card>
     
-    <mat-card class="text-center">
-      <mat-card-content>
-        <div class="text-2xl font-bold text-purple-600">{{ stats.avgWorkload }}%</div>
-        <div class="text-sm text-gray-600">平均工作負荷</div>
-      </mat-card-content>
-    </mat-card>
   </div>
 
   <!-- 風險警示 -->
