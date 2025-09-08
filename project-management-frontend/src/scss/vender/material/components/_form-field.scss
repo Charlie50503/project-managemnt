@@ -1,0 +1,48 @@
+@use "@angular/material" as mat;
+
+/**
+** fix tailwind css conflict with material ui
+** url:https://github.com/tailwindlabs/tailwindcss/discussions/9993
+*/
+.mdc-notched-outline__notch {
+  border-right: none !important;
+  border-left: none !important;
+}
+
+
+.dense-8 {
+  @include mat.all-component-densities(-8);
+}
+
+.dense-6 {
+  @include mat.all-component-densities(-6);
+}
+
+.dense-5 {
+  @include mat.all-component-densities(-5);
+}
+
+.dense-4 {
+  @include mat.all-component-densities(-4);
+}
+
+.dense-3 {
+  @include mat.all-component-densities(-3);
+}
+
+.dense-2 {
+  @include mat.all-component-densities(-2);
+}
+
+.dense-1 {
+  @include mat.all-component-densities(-1);
+}
+
+
+// form field 預設樣式
+// * {
+//   --mdc-outlined-text-field-label-text-font: DreamHanSansTW-W15, "微軟正黑體", Roboto, "Helvetica Neue", sans-serif;
+//   --mat-form-field-subscript-text-font: DreamHanSansTW-W11, "微軟正黑體", Roboto, "Helvetica Neue", sans-serif;
+//   --mat-form-field-container-text-font: DreamHanSansTW-W15, "微軟正黑體", Roboto, "Helvetica Neue", sans-serif;
+//   --mdc-form-field-label-text-font: DreamHanSansTW-W15, "微軟正黑體", Roboto, "Helvetica Neue", sans-serif;
+// }
