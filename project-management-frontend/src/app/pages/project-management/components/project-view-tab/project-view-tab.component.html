@@ -29,7 +29,7 @@
         <td mat-cell *matCellDef="let project">
           <div class="font-medium text-gray-900">{{ project.project }}</div>
           <div class="text-xs text-gray-400 mt-1">
-            {{ project.startDate }} ~ {{ project.expectedEndDate }}
+            {{ (project.startDate || '未設定') }} ~ {{ (project.expectedEndDate || '未設定') }}
           </div>
         </td>
       </ng-container>

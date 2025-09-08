@@ -85,8 +85,8 @@ export class ProjectFormDialogComponent implements OnInit {
       project: ['', [Validators.required, Validators.minLength(2)]],
       system: ['', [Validators.required, Validators.minLength(2)]],
       projectManager: ['', Validators.required],
-      startDate: ['', Validators.required],
-      expectedEndDate: ['', Validators.required],
+      startDate: [''],
+      expectedEndDate: [''],
       demo: [''],
       status: ['not-started', Validators.required]
     }, { validators: this.dateValidator });

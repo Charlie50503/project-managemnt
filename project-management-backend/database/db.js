@@ -59,8 +59,8 @@ class DatabaseWrapper {
         overall_progress REAL DEFAULT 0,
         status TEXT CHECK(status IN ('not-started', 'in-progress', 'completed', 'pending', 'on-hold', 'cancelled')) DEFAULT 'not-started',
         project_manager TEXT NOT NULL,
-        start_date TEXT NOT NULL,
-        expected_end_date TEXT NOT NULL,
+        start_date TEXT,
+        expected_end_date TEXT,
         demo TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -207,8 +207,8 @@ class DatabaseWrapper {
             overall_progress REAL DEFAULT 0,
             status TEXT CHECK(status IN ('not-started', 'in-progress', 'completed', 'pending', 'on-hold', 'cancelled')) DEFAULT 'not-started',
             project_manager TEXT NOT NULL,
-            start_date TEXT NOT NULL,
-            expected_end_date TEXT NOT NULL,
+            start_date TEXT,
+            expected_end_date TEXT,
             demo TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -242,8 +242,8 @@ class DatabaseWrapper {
           overall_progress REAL DEFAULT 0,
           status TEXT CHECK(status IN ('not-started', 'in-progress', 'completed', 'pending', 'on-hold', 'cancelled')) DEFAULT 'not-started',
           project_manager TEXT NOT NULL,
-          start_date TEXT NOT NULL,
-          expected_end_date TEXT NOT NULL,
+          start_date TEXT,
+          expected_end_date TEXT,
           demo TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP

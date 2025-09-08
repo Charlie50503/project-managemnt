@@ -66,7 +66,7 @@
     <!-- 日期 -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <mat-form-field appearance="outline">
-        <mat-label>開始日期 *</mat-label>
+        <mat-label>開始日期</mat-label>
         <input matInput [matDatepicker]="startPicker" formControlName="startDate">
         <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
         <mat-datepicker #startPicker></mat-datepicker>
@@ -74,7 +74,7 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>預計結束日期 *</mat-label>
+        <mat-label>預計結束日期</mat-label>
         <input matInput [matDatepicker]="endPicker" formControlName="expectedEndDate">
         <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
         <mat-datepicker #endPicker></mat-datepicker>
