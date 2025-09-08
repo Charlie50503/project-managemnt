@@ -43,7 +43,7 @@ interface Project {
   notStartedTasks: number; // 未開始任務數
   overallProgress: number; // 整體進度 (百分比)
   status: ProjectStatus;   // 專案狀態
-  projectManager: string;  // 專案經理
+  projectManager: string;  // PM
   startDate: string;       // 開始日期
   expectedEndDate: string; // 預期結束日期
   demo?: string;          // 展示連結 (可選)

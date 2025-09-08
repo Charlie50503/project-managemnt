@@ -41,10 +41,10 @@
       </mat-form-field>
     </div>
 
-    <!-- 專案經理與狀態 -->
+    <!-- PM與狀態 -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <mat-form-field appearance="outline">
-        <mat-label>專案經理 *</mat-label>
+        <mat-label>PM *</mat-label>
         <mat-select formControlName="projectManager">
           <mat-option *ngFor="let member of members$ | async" [value]="member.name">
             {{ member.name }}

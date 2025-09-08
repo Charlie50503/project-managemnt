@@ -248,7 +248,7 @@ export class DataManagementComponent implements OnInit {
     const taskData: Partial<Task> = {
       project: project.project,
       system: project.system,
-      member: project.projectManager, // 預設負責人為專案經理
+      member: project.projectManager, // 預設負責人為PM
       task: '', // 任務名稱留空讓使用者填寫
       complexity: '中', // 預設複雜度
       priority: '中', // 預設優先級

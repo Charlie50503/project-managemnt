@@ -172,7 +172,7 @@ export class ProjectFormDialogComponent implements OnInit {
       projectSource: '案件來源',
       project: '案件名稱',
       system: '系統名稱',
-      projectManager: '專案經理',
+      projectManager: 'PM',
       startDate: '開始日期',
       expectedEndDate: '預計結束日期'
     };
