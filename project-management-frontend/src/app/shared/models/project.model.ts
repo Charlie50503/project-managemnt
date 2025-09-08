@@ -1,5 +1,5 @@
 export type TaskStatus = 'not-started' | 'in-progress' | 'completed';
-export type ProjectStatus = 'not-started' | 'in-progress' | 'completed';
+export type ProjectStatus = 'not-started' | 'in-progress' | 'completed' | 'pending' | 'on-hold' | 'cancelled';
 export type Priority = '高' | '中' | '低';
 export type Complexity = '高' | '中' | '低';
 

@@ -57,7 +57,7 @@ class DatabaseWrapper {
         in_progress_tasks INTEGER DEFAULT 0,
         not_started_tasks INTEGER DEFAULT 0,
         overall_progress REAL DEFAULT 0,
-        status TEXT CHECK(status IN ('not-started', 'in-progress', 'completed')) DEFAULT 'not-started',
+        status TEXT CHECK(status IN ('not-started', 'in-progress', 'completed', 'pending', 'on-hold', 'cancelled')) DEFAULT 'not-started',
         project_manager TEXT NOT NULL,
         start_date TEXT NOT NULL,
         expected_end_date TEXT NOT NULL,
@@ -69,6 +69,14 @@ class DatabaseWrapper {
 
     // 檢查並更新 tasks 表結構
     this.updateTasksTableSchema();
+    
+    // 檢查並更新 projects 表結構
+    this.updateProjectsTableSchema();
+
+    console.log('Database tables initialized');
+    
+    // 檢查是否需要插入初始資料
+    this.insertInitialData();
   }
 
   updateTasksTableSchema() {
@@ -159,6 +167,84 @@ class DatabaseWrapper {
           start_date TEXT,
           end_date TEXT,
           actual_end_date TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+    }
+  }
+
+  updateProjectsTableSchema() {
+    try {
+      // 檢查 projects 表是否存在以及其結構
+      const tableInfo = this.db.prepare("PRAGMA table_info(projects)").all();
+      
+      if (tableInfo.length > 0) {
+        // 檢查 status 欄位的約束是否需要更新
+        // 由於 SQLite 不支援直接修改 CHECK 約束，我們需要重建表
+        console.log('Updating projects table schema to support new status values...');
+        
+        // 備份現有數據
+        this.db.exec(`
+          CREATE TABLE projects_backup AS SELECT * FROM projects
+        `);
+        
+        // 刪除舊表
+        this.db.exec(`DROP TABLE projects`);
+        
+        // 創建新表
+        this.db.exec(`
+          CREATE TABLE projects (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_number TEXT,
+            project_source TEXT,
+            project TEXT NOT NULL,
+            system TEXT NOT NULL,
+            total_tasks INTEGER DEFAULT 0,
+            completed_tasks INTEGER DEFAULT 0,
+            in_progress_tasks INTEGER DEFAULT 0,
+            not_started_tasks INTEGER DEFAULT 0,
+            overall_progress REAL DEFAULT 0,
+            status TEXT CHECK(status IN ('not-started', 'in-progress', 'completed', 'pending', 'on-hold', 'cancelled')) DEFAULT 'not-started',
+            project_manager TEXT NOT NULL,
+            start_date TEXT NOT NULL,
+            expected_end_date TEXT NOT NULL,
+            demo TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+        
+        // 恢復數據
+        this.db.exec(`
+          INSERT INTO projects SELECT * FROM projects_backup
+        `);
+        
+        // 刪除備份表
+        this.db.exec(`DROP TABLE projects_backup`);
+        
+        console.log('Projects table schema updated successfully');
+      }
+    } catch (error) {
+      console.error('Error updating projects table schema:', error);
+      // 如果更新失敗，確保至少有基本表結構
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS projects (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          project_number TEXT,
+          project_source TEXT,
+          project TEXT NOT NULL,
+          system TEXT NOT NULL,
+          total_tasks INTEGER DEFAULT 0,
+          completed_tasks INTEGER DEFAULT 0,
+          in_progress_tasks INTEGER DEFAULT 0,
+          not_started_tasks INTEGER DEFAULT 0,
+          overall_progress REAL DEFAULT 0,
+          status TEXT CHECK(status IN ('not-started', 'in-progress', 'completed', 'pending', 'on-hold', 'cancelled')) DEFAULT 'not-started',
+          project_manager TEXT NOT NULL,
+          start_date TEXT NOT NULL,
+          expected_end_date TEXT NOT NULL,
+          demo TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )

@@ -11,6 +11,9 @@ export class StatusHelperService {
       case 'not-started': return 'bg-gray-100 text-gray-800';
       case 'in-progress': return 'bg-blue-100 text-blue-800';
       case 'completed': return 'bg-green-100 text-green-800';
+      case 'pending': return 'bg-orange-100 text-orange-800';
+      case 'on-hold': return 'bg-yellow-100 text-yellow-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   }
@@ -20,6 +23,9 @@ export class StatusHelperService {
       case 'not-started': return '未開始';
       case 'in-progress': return '進行中';
       case 'completed': return '已完成';
+      case 'pending': return '待排';
+      case 'on-hold': return '保留';
+      case 'cancelled': return '廢棄';
       default: return '未知';
     }
   }
@@ -43,8 +49,11 @@ export class StatusHelperService {
   }
 
   getProgressBarColor(progress: number, status: TaskStatus | ProjectStatus): string {
-    if (progress === 100) return 'bg-green-500';
+    if (progress === 100 || status === 'completed') return 'bg-green-500';
     if (status === 'not-started') return 'bg-gray-500';
+    if (status === 'pending') return 'bg-orange-500';
+    if (status === 'on-hold') return 'bg-yellow-500';
+    if (status === 'cancelled') return 'bg-red-500';
     return 'bg-blue-500';
   }
 }

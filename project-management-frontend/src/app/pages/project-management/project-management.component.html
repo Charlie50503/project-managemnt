@@ -68,11 +68,12 @@
             [value]="statusFilter"
             (selectionChange)="onStatusFilterChange($event.value)">
             <mat-option value="all">所有狀態</mat-option>
-            <mat-option value="completed">已完成</mat-option>
+            <mat-option value="not-started">未開始</mat-option>
             <mat-option value="in-progress">進行中</mat-option>
-            <mat-option value="delayed">延遲</mat-option>
-            <mat-option value="normal">正常</mat-option>
-            <mat-option value="risk">風險</mat-option>
+            <mat-option value="completed">已完成</mat-option>
+            <mat-option value="pending">待排</mat-option>
+            <mat-option value="on-hold">保留</mat-option>
+            <mat-option value="cancelled">廢棄</mat-option>
           </mat-select>
         </mat-form-field>
       </div>

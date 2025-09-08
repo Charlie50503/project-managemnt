@@ -53,7 +53,10 @@ export class ProjectFormDialogComponent implements OnInit {
   statusOptions: { value: ProjectStatus; label: string }[] = [
     { value: 'not-started', label: '未開始' },
     { value: 'in-progress', label: '進行中' },
-    { value: 'completed', label: '已完成' }
+    { value: 'completed', label: '已完成' },
+    { value: 'pending', label: '待排' },
+    { value: 'on-hold', label: '保留' },
+    { value: 'cancelled', label: '廢棄' }
   ];
 
   constructor(
