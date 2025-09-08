@@ -61,6 +61,7 @@ class DatabaseWrapper {
         project_manager TEXT NOT NULL,
         start_date TEXT,
         expected_end_date TEXT,
+        sort_order INTEGER DEFAULT 0,
         demo TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -69,12 +70,12 @@ class DatabaseWrapper {
 
     // 檢查並更新 tasks 表結構
     this.updateTasksTableSchema();
-    
+
     // 檢查並更新 projects 表結構
     this.updateProjectsTableSchema();
 
     console.log('Database tables initialized');
-    
+
     // 檢查是否需要插入初始資料
     this.insertInitialData();
   }
@@ -83,7 +84,7 @@ class DatabaseWrapper {
     try {
       // 檢查 tasks 表是否存在以及其結構
       const tableInfo = this.db.prepare("PRAGMA table_info(tasks)").all();
-      
+
       if (tableInfo.length === 0) {
         // 表不存在，創建新表
         this.db.exec(`
@@ -108,19 +109,19 @@ class DatabaseWrapper {
         // 檢查 start_date 和 end_date 是否為 NOT NULL
         const startDateColumn = tableInfo.find(col => col.name === 'start_date');
         const endDateColumn = tableInfo.find(col => col.name === 'end_date');
-        
+
         if (startDateColumn && startDateColumn.notnull === 1) {
           // 需要更新表結構，備份數據並重建表
           console.log('Updating tasks table schema to allow null dates...');
-          
+
           // 備份現有數據
           this.db.exec(`
             CREATE TABLE tasks_backup AS SELECT * FROM tasks
           `);
-          
+
           // 刪除舊表
           this.db.exec(`DROP TABLE tasks`);
-          
+
           // 創建新表
           this.db.exec(`
             CREATE TABLE tasks (
@@ -139,15 +140,15 @@ class DatabaseWrapper {
               updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
           `);
-          
+
           // 恢復數據
           this.db.exec(`
             INSERT INTO tasks SELECT * FROM tasks_backup
           `);
-          
+
           // 刪除備份表
           this.db.exec(`DROP TABLE tasks_backup`);
-          
+
           console.log('Tasks table schema updated successfully');
         }
       }
@@ -178,55 +179,84 @@ class DatabaseWrapper {
     try {
       // 檢查 projects 表是否存在以及其結構
       const tableInfo = this.db.prepare("PRAGMA table_info(projects)").all();
-      
+
       if (tableInfo.length > 0) {
-        // 檢查 status 欄位的約束是否需要更新
-        // 由於 SQLite 不支援直接修改 CHECK 約束，我們需要重建表
-        console.log('Updating projects table schema to support new status values...');
-        
-        // 備份現有數據
-        this.db.exec(`
-          CREATE TABLE projects_backup AS SELECT * FROM projects
-        `);
-        
-        // 刪除舊表
-        this.db.exec(`DROP TABLE projects`);
-        
-        // 創建新表
-        this.db.exec(`
-          CREATE TABLE projects (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            project_number TEXT,
-            project_source TEXT,
-            project TEXT NOT NULL,
-            system TEXT NOT NULL,
-            total_tasks INTEGER DEFAULT 0,
-            completed_tasks INTEGER DEFAULT 0,
-            in_progress_tasks INTEGER DEFAULT 0,
-            not_started_tasks INTEGER DEFAULT 0,
-            overall_progress REAL DEFAULT 0,
-            status TEXT CHECK(status IN ('not-started', 'in-progress', 'completed', 'pending', 'on-hold', 'cancelled')) DEFAULT 'not-started',
-            project_manager TEXT NOT NULL,
-            start_date TEXT,
-            expected_end_date TEXT,
-            demo TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-          )
-        `);
-        
-        // 恢復數據
-        this.db.exec(`
-          INSERT INTO projects SELECT * FROM projects_backup
-        `);
-        
-        // 刪除備份表
-        this.db.exec(`DROP TABLE projects_backup`);
-        
-        console.log('Projects table schema updated successfully');
+        // 檢查是否已有 sort_order 欄位
+        const hasSortOrder = tableInfo.some(col => col.name === 'sort_order');
+
+        if (!hasSortOrder) {
+          console.log('Adding sort_order column to projects table...');
+
+          // 先清理可能存在的備份表
+          try {
+            this.db.exec(`DROP TABLE IF EXISTS projects_backup`);
+          } catch (e) {
+            // 忽略錯誤
+          }
+
+          // 備份現有數據
+          this.db.exec(`
+            CREATE TABLE projects_backup AS SELECT * FROM projects
+          `);
+
+          // 刪除舊表
+          this.db.exec(`DROP TABLE projects`);
+
+          // 創建新表
+          this.db.exec(`
+            CREATE TABLE projects (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              project_number TEXT,
+              project_source TEXT,
+              project TEXT NOT NULL,
+              system TEXT NOT NULL,
+              total_tasks INTEGER DEFAULT 0,
+              completed_tasks INTEGER DEFAULT 0,
+              in_progress_tasks INTEGER DEFAULT 0,
+              not_started_tasks INTEGER DEFAULT 0,
+              overall_progress REAL DEFAULT 0,
+              status TEXT CHECK(status IN ('not-started', 'in-progress', 'completed', 'pending', 'on-hold', 'cancelled')) DEFAULT 'not-started',
+              project_manager TEXT NOT NULL,
+              start_date TEXT,
+              expected_end_date TEXT,
+              sort_order INTEGER DEFAULT 0,
+              demo TEXT,
+              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+          `);
+
+          // 恢復數據（添加預設的 sort_order 值）
+          this.db.exec(`
+            INSERT INTO projects (
+              id, project_number, project_source, project, system, total_tasks,
+              completed_tasks, in_progress_tasks, not_started_tasks, overall_progress,
+              status, project_manager, start_date, expected_end_date, demo,
+              created_at, updated_at, sort_order
+            )
+            SELECT 
+              id, project_number, project_source, project, system, total_tasks,
+              completed_tasks, in_progress_tasks, not_started_tasks, overall_progress,
+              status, project_manager, start_date, expected_end_date, demo,
+              created_at, updated_at, 0
+            FROM projects_backup
+          `);
+
+          // 刪除備份表
+          this.db.exec(`DROP TABLE projects_backup`);
+
+          console.log('Projects table schema updated successfully');
+        }
       }
     } catch (error) {
       console.error('Error updating projects table schema:', error);
+      // 清理備份表
+      try {
+        this.db.exec(`DROP TABLE IF EXISTS projects_backup`);
+      } catch (e) {
+        // 忽略錯誤
+      }
+
       // 如果更新失敗，確保至少有基本表結構
       this.db.exec(`
         CREATE TABLE IF NOT EXISTS projects (
@@ -244,6 +274,7 @@ class DatabaseWrapper {
           project_manager TEXT NOT NULL,
           start_date TEXT,
           expected_end_date TEXT,
+          sort_order INTEGER DEFAULT 0,
           demo TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP

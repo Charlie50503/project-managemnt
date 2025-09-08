@@ -42,7 +42,7 @@
     </div>
 
     <!-- PM與狀態 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <mat-form-field appearance="outline">
         <mat-label>PM *</mat-label>
         <mat-select formControlName="projectManager">
@@ -60,6 +60,18 @@
             {{ status.label }}
           </mat-option>
         </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>排序順序 *</mat-label>
+        <input matInput 
+               type="number" 
+               formControlName="sortOrder" 
+               placeholder="0"
+               min="0"
+               step="1">
+        <mat-hint>數字越小排序越前面</mat-hint>
+        <mat-error>{{ projectForm.get('sortOrder')!.errors | errorMessage }}</mat-error>
       </mat-form-field>
     </div>
 

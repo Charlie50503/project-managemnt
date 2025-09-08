@@ -23,6 +23,7 @@ import { ProjectFormDialogComponent } from './components/project-form-dialog/pro
 import { TaskFormDialogComponent } from './components/task-form-dialog/task-form-dialog.component';
 import { BulkTaskFormDialogComponent } from './components/bulk-task-form-dialog/bulk-task-form-dialog.component';
 import { SystemFormDialogComponent } from './components/system-form-dialog/system-form-dialog.component';
+import { ProjectSortDialogComponent } from './components/project-sort-dialog/project-sort-dialog.component';
 import { SystemCrudService } from './services/system-crud.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 
@@ -442,6 +443,66 @@ export class ProjectManagementComponent implements OnInit {
         });
       }
     });
+  }
+
+  // 專案排序管理
+  openProjectSortDialog(): void {
+    this.projectCrudService.getProjects().subscribe(projects => {
+      const dialogRef = this.dialog.open(ProjectSortDialogComponent, {
+        width: '600px',
+        maxHeight: '80vh',
+        data: { projects }
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result && Array.isArray(result)) {
+          this.updateProjectsOrder(result);
+        }
+      });
+    });
+  }
+
+  private updateProjectsOrder(projects: Project[]): void {
+    // 檢查專案是否有有效的 ID
+    const invalidProjects = projects.filter(p => !p.id);
+    if (invalidProjects.length > 0) {
+      console.error('Some projects have invalid IDs:', invalidProjects);
+      this.snackBar.open('部分專案資料無效，無法更新排序', '關閉', { duration: 3000 });
+      return;
+    }
+
+    // 批量更新專案排序
+    let completedCount = 0;
+    let errorCount = 0;
+    const totalCount = projects.length;
+
+    projects.forEach((project, index) => {
+      this.projectCrudService.updateProject(project.id, { sortOrder: index }).subscribe({
+        next: () => {
+          completedCount++;
+          if (completedCount + errorCount === totalCount) {
+            this.handleUpdateComplete(completedCount, errorCount);
+          }
+        },
+        error: (error) => {
+          console.error(`Error updating project ${project.id}:`, error);
+          errorCount++;
+          if (completedCount + errorCount === totalCount) {
+            this.handleUpdateComplete(completedCount, errorCount);
+          }
+        }
+      });
+    });
+  }
+
+  private handleUpdateComplete(successCount: number, errorCount: number): void {
+    if (errorCount === 0) {
+      this.snackBar.open('專案排序更新成功', '關閉', { duration: 3000 });
+    } else if (successCount === 0) {
+      this.snackBar.open('專案排序更新失敗', '關閉', { duration: 3000 });
+    } else {
+      this.snackBar.open(`專案排序更新完成：成功 ${successCount} 個，失敗 ${errorCount} 個`, '關閉', { duration: 5000 });
+    }
   }
 
   private refreshData(): void {

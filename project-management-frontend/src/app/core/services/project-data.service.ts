@@ -113,7 +113,8 @@ export class ProjectDataService {
               completedTasks: 0,
               inProgressTasks: 0,
               notStartedTasks: 0,
-              overallProgress: 0
+              overallProgress: 0,
+              sortOrder: projectInfo?.sortOrder || 0
             };
           }
 

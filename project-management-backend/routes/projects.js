@@ -24,7 +24,7 @@ function calculateProjectStats(projectName) {
 // GET /api/projects - 取得所有專案
 router.get('/', (req, res) => {
   try {
-    const projects = db.all('SELECT * FROM projects ORDER BY created_at DESC');
+    const projects = db.all('SELECT * FROM projects ORDER BY sort_order ASC, created_at DESC');
 
     // 為每個專案計算最新統計資料
     const formattedProjects = projects.map((project) => {
@@ -45,7 +45,8 @@ router.get('/', (req, res) => {
         projectManager: project.project_manager,
         startDate: project.start_date,
         expectedEndDate: project.expected_end_date,
-        demo: project.demo
+        demo: project.demo,
+        sortOrder: project.sort_order
       };
     });
 
@@ -82,7 +83,8 @@ router.get('/:id', (req, res) => {
       projectManager: project.project_manager,
       startDate: project.start_date,
       expectedEndDate: project.expected_end_date,
-      demo: project.demo
+      demo: project.demo,
+      sortOrder: project.sort_order
     };
 
     res.json(formattedProject);
@@ -97,7 +99,7 @@ router.post('/', (req, res) => {
   try {
     const {
       projectNumber, projectSource, project, system, status,
-      projectManager, startDate, expectedEndDate, demo
+      projectManager, startDate, expectedEndDate, demo, sortOrder
     } = req.body;
 
     // 驗證必要欄位
@@ -110,8 +112,8 @@ router.post('/', (req, res) => {
     const result = db.run(
       `INSERT INTO projects (
         project_number, project_source, project, system, status,
-        project_manager, start_date, expected_end_date, demo
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        project_manager, start_date, expected_end_date, demo, sort_order
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         projectNumber || null,
         projectSource || null,
@@ -121,7 +123,8 @@ router.post('/', (req, res) => {
         projectManager,
         startDate || null,
         expectedEndDate || null,
-        demo || null
+        demo || null,
+        sortOrder || 0
       ]
     );
 
@@ -140,7 +143,8 @@ router.post('/', (req, res) => {
       projectManager,
       startDate: startDate || null,
       expectedEndDate: expectedEndDate || null,
-      demo: demo || null
+      demo: demo || null,
+      sortOrder: sortOrder || 0
     };
 
     res.status(201).json(newProject);
@@ -168,7 +172,7 @@ router.put('/:id', (req, res) => {
       `UPDATE projects SET 
        project_number = ?, project_source = ?, project = ?, system = ?,
        status = ?, project_manager = ?, start_date = ?, expected_end_date = ?,
-       demo = ?, updated_at = ?
+       demo = ?, sort_order = ?, updated_at = ?
        WHERE id = ?`,
       [
         updates.projectNumber !== undefined ? updates.projectNumber : existingProject.project_number,
@@ -180,6 +184,7 @@ router.put('/:id', (req, res) => {
         updates.startDate !== undefined ? (updates.startDate || null) : existingProject.start_date,
         updates.expectedEndDate !== undefined ? (updates.expectedEndDate || null) : existingProject.expected_end_date,
         updates.demo !== undefined ? updates.demo : existingProject.demo,
+        updates.sortOrder !== undefined ? updates.sortOrder : existingProject.sort_order,
         updatedAt,
         projectId
       ]
@@ -203,13 +208,46 @@ router.put('/:id', (req, res) => {
       projectManager: updatedProject.project_manager,
       startDate: updatedProject.start_date,
       expectedEndDate: updatedProject.expected_end_date,
-      demo: updatedProject.demo
+      demo: updatedProject.demo,
+      sortOrder: updatedProject.sort_order
     };
 
     res.json(formattedProject);
   } catch (error) {
     console.error('Error updating project:', error);
     res.status(500).json({ error: 'Failed to update project' });
+  }
+});
+
+// PUT /api/projects/reorder - 批量更新專案排序
+router.put('/reorder', (req, res) => {
+  try {
+    const { projects } = req.body;
+
+    if (!Array.isArray(projects)) {
+      return res.status(400).json({ error: 'Projects array is required' });
+    }
+
+    // 開始事務
+    db.run('BEGIN TRANSACTION');
+
+    try {
+      projects.forEach((project, index) => {
+        db.run(
+          'UPDATE projects SET sort_order = ? WHERE id = ?',
+          [index, project.id]
+        );
+      });
+
+      db.run('COMMIT');
+      res.json({ message: 'Project order updated successfully' });
+    } catch (error) {
+      db.run('ROLLBACK');
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error updating project order:', error);
+    res.status(500).json({ error: 'Failed to update project order' });
   }
 });
 

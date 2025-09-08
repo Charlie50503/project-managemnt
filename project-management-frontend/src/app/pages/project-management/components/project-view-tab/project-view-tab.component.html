@@ -1,15 +1,12 @@
 <mat-card class="overflow-hidden">
   <div class="overflow-x-auto">
     <table mat-table [dataSource]="(filteredData$ | async) || []" multiTemplateDataRows class="w-full">
-      
+
       <!-- 展開按鈕欄 -->
       <ng-container matColumnDef="expand">
         <th mat-header-cell *matHeaderCellDef class="w-12"></th>
         <td mat-cell *matCellDef="let project" class="w-12">
-          <button 
-            mat-icon-button 
-            (click)="onToggleRow(getRowKey(project))"
-            class="text-gray-400">
+          <button mat-icon-button (click)="onToggleRow(getRowKey(project))" class="text-gray-400">
             <mat-icon>{{ isRowExpanded(getRowKey(project)) ? 'expand_less' : 'expand_more' }}</mat-icon>
           </button>
         </td>
@@ -17,7 +14,14 @@
 
       <!-- 系統名稱欄 -->
       <ng-container matColumnDef="system">
-        <th mat-header-cell *matHeaderCellDef>系統名稱</th>
+        <th mat-header-cell *matHeaderCellDef class="cursor-pointer hover:bg-gray-50" (click)="onSort('system')">
+          <div class="flex items-center">
+            系統名稱
+            <mat-icon class="ml-1 text-sm" [class.text-blue-600]="isSorted('system')">
+              {{ getSortIcon('system') }}
+            </mat-icon>
+          </div>
+        </th>
         <td mat-cell *matCellDef="let project">
           <div class="font-medium text-gray-900">{{ project.system }}</div>
         </td>
@@ -25,7 +29,14 @@
 
       <!-- 案件名稱欄 -->
       <ng-container matColumnDef="project">
-        <th mat-header-cell *matHeaderCellDef>案件名稱</th>
+        <th mat-header-cell *matHeaderCellDef class="cursor-pointer hover:bg-gray-50" (click)="onSort('project')">
+          <div class="flex items-center">
+            案件名稱
+            <mat-icon class="ml-1 text-sm" [class.text-blue-600]="isSorted('project')">
+              {{ getSortIcon('project') }}
+            </mat-icon>
+          </div>
+        </th>
         <td mat-cell *matCellDef="let project">
           <div class="font-medium text-gray-900">{{ project.project }}</div>
           <div class="text-xs text-gray-400 mt-1">
@@ -36,11 +47,17 @@
 
       <!-- 案件進度欄 -->
       <ng-container matColumnDef="projectProgress">
-        <th mat-header-cell *matHeaderCellDef>案件進度</th>
+        <th mat-header-cell *matHeaderCellDef class="cursor-pointer hover:bg-gray-50"
+          (click)="onSort('projectProgress')">
+          <div class="flex items-center">
+            案件進度
+            <mat-icon class="ml-1 text-sm" [class.text-blue-600]="isSorted('projectProgress')">
+              {{ getSortIcon('projectProgress') }}
+            </mat-icon>
+          </div>
+        </th>
         <td mat-cell *matCellDef="let project">
-          <mat-chip 
-            [ngClass]="statusHelper.getStatusColor(project.status)"
-            class="text-xs">
+          <mat-chip [ngClass]="statusHelper.getStatusColor(project.status)" class="text-xs">
             {{ statusHelper.getStatusText(project.status) }}
           </mat-chip>
         </td>
@@ -48,7 +65,14 @@
 
       <!-- 總任務項欄 -->
       <ng-container matColumnDef="totalTasks">
-        <th mat-header-cell *matHeaderCellDef>總任務項</th>
+        <th mat-header-cell *matHeaderCellDef class="cursor-pointer hover:bg-gray-50" (click)="onSort('totalTasks')">
+          <div class="flex items-center justify-center">
+            總任務項
+            <mat-icon class="ml-1 text-sm" [class.text-blue-600]="isSorted('totalTasks')">
+              {{ getSortIcon('totalTasks') }}
+            </mat-icon>
+          </div>
+        </th>
         <td mat-cell *matCellDef="let project" class="text-center">
           <span class="font-medium">{{ project.totalTasks }}</span>
         </td>
@@ -56,7 +80,14 @@
 
       <!-- 已完成欄 -->
       <ng-container matColumnDef="completed">
-        <th mat-header-cell *matHeaderCellDef>已完成</th>
+        <th mat-header-cell *matHeaderCellDef class="cursor-pointer hover:bg-gray-50" (click)="onSort('completed')">
+          <div class="flex items-center justify-center">
+            已完成
+            <mat-icon class="ml-1 text-sm" [class.text-blue-600]="isSorted('completed')">
+              {{ getSortIcon('completed') }}
+            </mat-icon>
+          </div>
+        </th>
         <td mat-cell *matCellDef="let project" class="text-center">
           <span class="text-green-600 font-medium">{{ project.completedTasks }}</span>
         </td>
@@ -64,7 +95,14 @@
 
       <!-- 進行中欄 -->
       <ng-container matColumnDef="inProgress">
-        <th mat-header-cell *matHeaderCellDef>進行中</th>
+        <th mat-header-cell *matHeaderCellDef class="cursor-pointer hover:bg-gray-50" (click)="onSort('inProgress')">
+          <div class="flex items-center justify-center">
+            進行中
+            <mat-icon class="ml-1 text-sm" [class.text-blue-600]="isSorted('inProgress')">
+              {{ getSortIcon('inProgress') }}
+            </mat-icon>
+          </div>
+        </th>
         <td mat-cell *matCellDef="let project" class="text-center">
           <span class="text-blue-600 font-medium">{{ project.inProgressTasks }}</span>
         </td>
@@ -72,7 +110,14 @@
 
       <!-- 未開始欄 -->
       <ng-container matColumnDef="notStarted">
-        <th mat-header-cell *matHeaderCellDef>未開始</th>
+        <th mat-header-cell *matHeaderCellDef class="cursor-pointer hover:bg-gray-50" (click)="onSort('notStarted')">
+          <div class="flex items-center justify-center">
+            未開始
+            <mat-icon class="ml-1 text-sm" [class.text-blue-600]="isSorted('notStarted')">
+              {{ getSortIcon('notStarted') }}
+            </mat-icon>
+          </div>
+        </th>
         <td mat-cell *matCellDef="let project" class="text-center">
           <span class="text-gray-600 font-medium">{{ project.notStartedTasks }}</span>
         </td>
@@ -80,14 +125,19 @@
 
       <!-- 進度百分比欄 -->
       <ng-container matColumnDef="progressPercent">
-        <th mat-header-cell *matHeaderCellDef>進度百分比</th>
+        <th mat-header-cell *matHeaderCellDef class="cursor-pointer hover:bg-gray-50"
+          (click)="onSort('progressPercent')">
+          <div class="flex items-center">
+            進度百分比
+            <mat-icon class="ml-1 text-sm" [class.text-blue-600]="isSorted('progressPercent')">
+              {{ getSortIcon('progressPercent') }}
+            </mat-icon>
+          </div>
+        </th>
         <td mat-cell *matCellDef="let project">
           <div class="flex items-center">
-            <mat-progress-bar 
-              mode="determinate" 
-              [value]="project.overallProgress"
-              [color]="project.overallProgress === 100 ? 'primary' : 'primary'"
-              class="w-16 mr-2">
+            <mat-progress-bar mode="determinate" [value]="project.overallProgress"
+              [color]="project.overallProgress === 100 ? 'primary' : 'primary'" class="w-16 mr-2">
             </mat-progress-bar>
             <span class="text-sm text-gray-600">{{ project.overallProgress }}%</span>
           </div>
@@ -99,22 +149,16 @@
         <th mat-header-cell *matHeaderCellDef>操作</th>
         <td mat-cell *matCellDef="let project">
           <div class="flex gap-1">
-            <button mat-icon-button 
-                    (click)="onEditProject(project); $event.stopPropagation()" 
-                    class="text-purple-600 hover:bg-purple-50"
-                    matTooltip="編輯專案">
+            <button mat-icon-button (click)="onEditProject(project); $event.stopPropagation()"
+              class="text-purple-600 hover:bg-purple-50" matTooltip="編輯專案">
               <mat-icon class="text-sm">edit</mat-icon>
             </button>
-            <button mat-icon-button 
-                    (click)="onAddTask(project.project); $event.stopPropagation()" 
-                    class="text-green-600 hover:bg-green-50"
-                    matTooltip="新增工作項">
+            <button mat-icon-button (click)="onAddTask(project.project); $event.stopPropagation()"
+              class="text-green-600 hover:bg-green-50" matTooltip="新增工作項">
               <mat-icon class="text-sm">add_task</mat-icon>
             </button>
-            <button mat-icon-button 
-                    (click)="onBulkAddTask(project.project); $event.stopPropagation()" 
-                    class="text-blue-600 hover:bg-blue-50"
-                    matTooltip="批量新增工作項">
+            <button mat-icon-button (click)="onBulkAddTask(project.project); $event.stopPropagation()"
+              class="text-blue-600 hover:bg-blue-50" matTooltip="批量新增工作項">
               <mat-icon class="text-sm">playlist_add</mat-icon>
             </button>
           </div>
@@ -124,8 +168,8 @@
       <!-- 展開的成員詳情欄 -->
       <ng-container matColumnDef="expandedDetail">
         <td mat-cell *matCellDef="let project" [attr.colspan]="displayedColumnsWithExpand.length">
-          <div class="expanded-detail-wrapper" 
-               [class.expanded-detail-wrapper-expanded]="isRowExpanded(getRowKey(project))">
+          <div class="expanded-detail-wrapper"
+            [class.expanded-detail-wrapper-expanded]="isRowExpanded(getRowKey(project))">
             <div class="expanded-detail">
               <div class="p-4 bg-green-25 border-l-4 border-green-200">
                 <h4 class="font-medium text-gray-800 mb-3">專案成員與任務詳情</h4>
@@ -134,60 +178,48 @@
                     <div class="mb-2">
                       <h5 class="font-medium text-gray-700">{{ member.member }}</h5>
                     </div>
-                    
+
                     <div class="space-y-2">
-                      <div *ngFor="let task of member.tasks" 
-                           class="grid grid-cols-1 md:grid-cols-7 gap-2 items-center p-2 bg-gray-50 rounded">
+                      <div *ngFor="let task of member.tasks"
+                        class="grid grid-cols-1 md:grid-cols-7 gap-2 items-center p-2 bg-gray-50 rounded">
                         <!-- 姓名 -->
                         <div class="font-medium text-sm">{{ member.member }}</div>
-                        
+
                         <!-- 項目名稱 -->
                         <div class="font-medium text-sm">{{ task.task }}</div>
-                        
+
                         <!-- 項目狀態 -->
-                        <mat-chip 
-                          [ngClass]="statusHelper.getStatusColor(task.status)"
-                          class="text-xs">
+                        <mat-chip [ngClass]="statusHelper.getStatusColor(task.status)" class="text-xs">
                           {{ statusHelper.getStatusText(task.status) }}
                         </mat-chip>
-                        
+
                         <!-- 複雜度 -->
-                        <mat-chip 
-                          [ngClass]="statusHelper.getComplexityColor(task.complexity)"
-                          class="text-xs">
+                        <mat-chip [ngClass]="statusHelper.getComplexityColor(task.complexity)" class="text-xs">
                           {{ task.complexity }}
                         </mat-chip>
-                        
+
                         <!-- 優先度 -->
-                        <mat-chip 
-                          [ngClass]="statusHelper.getPriorityColor(task.priority)"
-                          class="text-xs">
+                        <mat-chip [ngClass]="statusHelper.getPriorityColor(task.priority)" class="text-xs">
                           {{ task.priority }}
                         </mat-chip>
-                        
+
                         <!-- 開始日~預計完成日 -->
                         <div class="text-xs text-gray-600">
                           {{ task.startDate }} ~ {{ task.endDate }}
                         </div>
-                        
+
                         <!-- 操作按鈕 -->
                         <div class="flex justify-end gap-1">
-                          <button mat-icon-button 
-                                  (click)="onCopyTask(task)" 
-                                  class="text-green-600 hover:bg-green-50"
-                                  matTooltip="複製項目">
+                          <button mat-icon-button (click)="onCopyTask(task)" class="text-green-600 hover:bg-green-50"
+                            matTooltip="複製項目">
                             <mat-icon class="text-xs">content_copy</mat-icon>
                           </button>
-                          <button mat-icon-button 
-                                  (click)="onEditTask(task)" 
-                                  class="text-blue-600 hover:bg-blue-50"
-                                  matTooltip="編輯項目">
+                          <button mat-icon-button (click)="onEditTask(task)" class="text-blue-600 hover:bg-blue-50"
+                            matTooltip="編輯項目">
                             <mat-icon class="text-xs">edit</mat-icon>
                           </button>
-                          <button mat-icon-button 
-                                  (click)="onDeleteTask(task)" 
-                                  class="text-red-600 hover:bg-red-50"
-                                  matTooltip="刪除項目">
+                          <button mat-icon-button (click)="onDeleteTask(task)" class="text-red-600 hover:bg-red-50"
+                            matTooltip="刪除項目">
                             <mat-icon class="text-xs">delete</mat-icon>
                           </button>
                         </div>
@@ -203,11 +235,9 @@
 
       <tr mat-header-row *matHeaderRowDef="displayedColumnsWithExpand"></tr>
       <tr mat-row *matRowDef="let project; columns: displayedColumnsWithExpand;"
-          class="hover:bg-gray-50 cursor-pointer element-row"
-          [class.expanded-row]="isRowExpanded(getRowKey(project))"
-          (click)="onToggleRow(getRowKey(project))"></tr>
-      <tr mat-row *matRowDef="let project; columns: ['expandedDetail']" 
-          class="detail-row"></tr>
+        class="hover:bg-gray-50 cursor-pointer element-row" [class.expanded-row]="isRowExpanded(getRowKey(project))"
+        (click)="onToggleRow(getRowKey(project))"></tr>
+      <tr mat-row *matRowDef="let project; columns: ['expandedDetail']" class="detail-row"></tr>
     </table>
   </div>
 </mat-card>

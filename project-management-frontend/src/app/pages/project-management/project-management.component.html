@@ -25,6 +25,14 @@
             新增案件
           </button>
           <button 
+            mat-stroked-button 
+            color="primary"
+            (click)="openProjectSortDialog()"
+            class="flex items-center gap-2">
+            <mat-icon>sort</mat-icon>
+            排序管理
+          </button>
+          <button 
             mat-raised-button 
             color="accent"
             (click)="openCreateTaskDialog()"

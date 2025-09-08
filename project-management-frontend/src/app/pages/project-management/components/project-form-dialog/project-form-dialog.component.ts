@@ -88,7 +88,8 @@ export class ProjectFormDialogComponent implements OnInit {
       startDate: [''],
       expectedEndDate: [''],
       demo: [''],
-      status: ['not-started', Validators.required]
+      status: ['not-started', Validators.required],
+      sortOrder: [0, [Validators.required, Validators.min(0)]]
     }, { validators: this.dateValidator });
   }
 
@@ -114,7 +115,8 @@ export class ProjectFormDialogComponent implements OnInit {
       startDate: DateUtils.parseDate(project.startDate),
       expectedEndDate: DateUtils.parseDate(project.expectedEndDate),
       demo: project.demo || '',
-      status: project.status
+      status: project.status,
+      sortOrder: project.sortOrder || 0
     });
   }
 
@@ -137,6 +139,7 @@ export class ProjectFormDialogComponent implements OnInit {
         expectedEndDate: DateUtils.formatDate(formValue.expectedEndDate),
         demo: formValue.demo || '',
         status: formValue.status,
+        sortOrder: formValue.sortOrder || 0,
         totalTasks: this.data.project?.totalTasks || 0,
         completedTasks: this.data.project?.completedTasks || 0,
         inProgressTasks: this.data.project?.inProgressTasks || 0,
@@ -179,7 +182,8 @@ export class ProjectFormDialogComponent implements OnInit {
       system: '系統名稱',
       projectManager: 'PM',
       startDate: '開始日期',
-      expectedEndDate: '預計結束日期'
+      expectedEndDate: '預計結束日期',
+      sortOrder: '排序順序'
     };
     return labels[fieldName] || fieldName;
   }

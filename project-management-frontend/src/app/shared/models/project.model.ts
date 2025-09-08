@@ -33,6 +33,7 @@ export interface Project {
   startDate: string;
   expectedEndDate: string;
   demo?: string;
+  sortOrder: number;
 }
 
 export interface GroupedMemberData {
@@ -64,6 +65,7 @@ export interface GroupedProjectData {
   inProgressTasks: number;
   notStartedTasks: number;
   overallProgress: number;
+  sortOrder?: number;
 }
 
 export interface MemberInProject {
