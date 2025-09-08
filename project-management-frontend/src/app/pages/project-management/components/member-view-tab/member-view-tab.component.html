@@ -8,7 +8,7 @@
   </div>
 
   <div class="overflow-x-auto">
-    <table mat-table [dataSource]="(filteredData$ | async) || []" multiTemplateDataRows class="w-full">
+    <table mat-table [dataSource]="(paginatedData$ | async) || []" multiTemplateDataRows class="w-full">
 
       <!-- 展開按鈕欄 -->
       <ng-container matColumnDef="expand">
@@ -76,18 +76,18 @@
         <td mat-cell *matCellDef="let group" [attr.colspan]="displayedColumnsWithExpand.length">
           <div class="expanded-detail-wrapper"
             [class.expanded-detail-wrapper-expanded]="isRowExpanded(getRowKey(group))">
-            <div class="expanded-detail">
+            <div class="expanded-detail" *ngIf="isRowExpanded(getRowKey(group))">
               <div class="p-4 bg-blue-25 border-l-4 border-blue-200">
                 <h4 class="font-medium text-gray-800 mb-3">人員任務詳情 - 按案件分組</h4>
                 <div class="space-y-4">
-                  <div *ngFor="let projectGroup of getTasksByProject(group.tasks)" class="border border-gray-200 rounded-lg p-3">
+                  <div *ngFor="let projectGroup of getTasksByProject(group.tasks); trackBy: trackByProject" class="border border-gray-200 rounded-lg p-3">
                     <div class="mb-2">
                       <h5 class="font-medium text-gray-700">{{ projectGroup.project }}</h5>
                       <div class="text-xs text-gray-500">{{ projectGroup.system }}</div>
                     </div>
 
                     <div class="space-y-2">
-                      <div *ngFor="let task of projectGroup.tasks"
+                      <div *ngFor="let task of projectGroup.tasks; trackBy: trackByTask"
                         class="grid grid-cols-1 md:grid-cols-7 gap-2 items-center p-2 bg-gray-50 rounded">
                         <!-- 案件名稱 -->
                         <div class="font-medium text-sm">{{ task.project }}</div>
@@ -141,10 +141,20 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumnsWithExpand"></tr>
-      <tr mat-row *matRowDef="let group; columns: displayedColumnsWithExpand;"
+      <tr mat-row *matRowDef="let group; columns: displayedColumnsWithExpand; trackBy: trackByMember"
         class="hover:bg-gray-50 cursor-pointer element-row" [class.expanded-row]="isRowExpanded(getRowKey(group))"
         (click)="onToggleRow(getRowKey(group))"></tr>
-      <tr mat-row *matRowDef="let group; columns: ['expandedDetail']" class="detail-row"></tr>
+      <tr mat-row *matRowDef="let group; columns: ['expandedDetail']; trackBy: trackByMember" class="detail-row"></tr>
     </table>
   </div>
+
+  <!-- 分頁器 -->
+  <mat-paginator 
+    [length]="totalItems"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="[10, 20, 50, 100]"
+    [pageIndex]="pageIndex"
+    (page)="onPageChange($event)"
+    showFirstLastButtons>
+  </mat-paginator>
 </mat-card>

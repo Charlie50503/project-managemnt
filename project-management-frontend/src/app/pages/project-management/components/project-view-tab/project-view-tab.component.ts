@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable, map } from 'rxjs';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
@@ -10,6 +11,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSortModule } from '@angular/material/sort';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { GroupedProjectData } from '../../../../shared/models/project.model';
 import { StatusHelperService } from '../../../../shared/services/status-helper.service';
 
@@ -24,6 +26,7 @@ export interface SortState {
   styleUrls: ['./project-view-tab.component.scss'],
   imports: [
     CommonModule,
+    ScrollingModule,
     MatCardModule,
     MatTableModule,
     MatButtonModule,
@@ -31,7 +34,8 @@ export interface SortState {
     MatProgressBarModule,
     MatChipsModule,
     MatTooltipModule,
-    MatSortModule
+    MatSortModule,
+    MatPaginatorModule
   ],
 
 })
@@ -54,12 +58,18 @@ export class ProjectViewTabComponent {
   @Output() deleteTask = new EventEmitter<any>();
 
   filteredData$!: Observable<GroupedProjectData[]>;
+  paginatedData$!: Observable<GroupedProjectData[]>;
   displayedColumns: string[] = ['project', 'system', 'projectProgress', 'totalTasks', 'completed', 'inProgress', 'notStarted', 'progressPercent', 'actions'];
   displayedColumnsWithExpand: string[] = [...this.displayedColumns, 'expand'];
   expandedElement: GroupedProjectData | null = null;
   
   // 排序狀態
   sortState: SortState = { column: '', direction: '' };
+
+  // 分頁設定
+  pageSize = 20;
+  pageIndex = 0;
+  totalItems = 0;
 
   constructor(public statusHelper: StatusHelperService) { }
 
@@ -75,8 +85,26 @@ export class ProjectViewTabComponent {
 
   private updateFilteredData(): void {
     this.filteredData$ = this.groupedProjectData$.pipe(
-      map(data => this.sortData(this.filterData(data)))
+      map(data => {
+        const filtered = this.sortData(this.filterData(data));
+        this.totalItems = filtered.length;
+        return filtered;
+      })
     );
+
+    this.paginatedData$ = this.filteredData$.pipe(
+      map(data => {
+        const startIndex = this.pageIndex * this.pageSize;
+        const endIndex = startIndex + this.pageSize;
+        return data.slice(startIndex, endIndex);
+      })
+    );
+  }
+
+  onPageChange(event: any): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.updateFilteredData();
   }
 
   private filterData(data: GroupedProjectData[]): GroupedProjectData[] {
@@ -237,5 +265,18 @@ export class ProjectViewTabComponent {
 
   onDeleteTask(task: any): void {
     this.deleteTask.emit(task);
+  }
+
+  // TrackBy 函數優化 ngFor 效能
+  trackByProject(index: number, item: GroupedProjectData): string {
+    return item.project;
+  }
+
+  trackByMember(index: number, item: any): string {
+    return item.member;
+  }
+
+  trackByTask(index: number, item: any): number {
+    return item.id || index;
   }
 }

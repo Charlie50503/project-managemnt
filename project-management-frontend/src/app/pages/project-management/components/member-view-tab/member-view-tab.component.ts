@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable, map } from 'rxjs';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
@@ -9,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { GroupedMemberData } from '../../../../shared/models/project.model';
 import { StatusHelperService } from '../../../../shared/services/status-helper.service';
 
@@ -18,13 +20,15 @@ import { StatusHelperService } from '../../../../shared/services/status-helper.s
   styleUrls: ['./member-view-tab.component.scss'],
   imports: [
     CommonModule,
+    ScrollingModule,
     MatCardModule,
     MatTableModule,
     MatButtonModule,
     MatIconModule,
     MatProgressBarModule,
     MatChipsModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatPaginatorModule
   ],
 
 })
@@ -45,25 +49,51 @@ export class MemberViewTabComponent {
   @Output() deleteTask = new EventEmitter<any>();
 
   filteredData$!: Observable<GroupedMemberData[]>;
+  paginatedData$!: Observable<GroupedMemberData[]>;
 
   displayedColumns: string[] = ['member', 'totalTasks', 'completed', 'inProgress', 'notStarted', 'dateRange'];
   displayedColumnsWithExpand: string[] = [...this.displayedColumns, 'expand'];
   expandedElement: GroupedMemberData | null = null;
 
+  // 分頁設定
+  pageSize = 20;
+  pageIndex = 0;
+  totalItems = 0;
+
   constructor(public statusHelper: StatusHelperService) {}
 
   ngOnInit(): void {
-    this.filteredData$ = this.groupedMemberData$.pipe(
-      map(data => this.filterData(data))
-    );
+    this.updateData();
   }
 
   ngOnChanges(): void {
     if (this.groupedMemberData$) {
-      this.filteredData$ = this.groupedMemberData$.pipe(
-        map(data => this.filterData(data))
-      );
+      this.updateData();
     }
+  }
+
+  private updateData(): void {
+    this.filteredData$ = this.groupedMemberData$.pipe(
+      map(data => {
+        const filtered = this.filterData(data);
+        this.totalItems = filtered.length;
+        return filtered;
+      })
+    );
+
+    this.paginatedData$ = this.filteredData$.pipe(
+      map(data => {
+        const startIndex = this.pageIndex * this.pageSize;
+        const endIndex = startIndex + this.pageSize;
+        return data.slice(startIndex, endIndex);
+      })
+    );
+  }
+
+  onPageChange(event: any): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.updateData();
   }
 
   private filterData(data: GroupedMemberData[]): GroupedMemberData[] {
@@ -143,5 +173,18 @@ export class MemberViewTabComponent {
 
   onDeleteTask(task: any): void {
     this.deleteTask.emit(task);
+  }
+
+  // TrackBy 函數優化 ngFor 效能
+  trackByMember(index: number, item: GroupedMemberData): string {
+    return item.member;
+  }
+
+  trackByProject(index: number, item: any): string {
+    return item.project;
+  }
+
+  trackByTask(index: number, item: any): number {
+    return item.id || index;
   }
 }
