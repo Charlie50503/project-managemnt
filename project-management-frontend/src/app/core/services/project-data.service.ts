@@ -135,12 +135,22 @@ export class ProjectDataService {
           else if (item.status === 'not-started') grouped[item.project].notStartedTasks++;
         });
 
-        // 計算每個專案的整體進度
+        // 計算每個專案的整體進度和系統資訊
         Object.keys(grouped).forEach(projectKey => {
           const project = grouped[projectKey];
           if (project.totalTasks > 0) {
             // 進度 = (已完成任務數 / 總任務數) × 100
             project.overallProgress = Math.round((project.completedTasks / project.totalTasks) * 100);
+          }
+
+          // 處理系統資訊：如果專案涉及多個系統，顯示系統數量
+          const allTasks = Object.values(project.members).flatMap(member => member.tasks);
+          const uniqueSystems = [...new Set(allTasks.map(task => task.system))];
+          
+          if (uniqueSystems.length === 1) {
+            project.system = uniqueSystems[0];
+          } else {
+            project.system = `${uniqueSystems.length} 個系統`;
           }
 
           // 將成員物件轉為陣列以便渲染

@@ -43,7 +43,7 @@ export class ProjectViewTabComponent {
   @Output() deleteTask = new EventEmitter<any>();
 
   filteredData$!: Observable<GroupedProjectData[]>;
-  displayedColumns: string[] = ['system', 'project', 'projectProgress', 'totalTasks', 'completed', 'inProgress', 'notStarted', 'progressPercent', 'actions'];
+  displayedColumns: string[] = ['project', 'system', 'projectProgress', 'totalTasks', 'completed', 'inProgress', 'notStarted', 'progressPercent', 'actions'];
   displayedColumnsWithExpand: string[] = [...this.displayedColumns, 'expand'];
   expandedElement: GroupedProjectData | null = null;
 
